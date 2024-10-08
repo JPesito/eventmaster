@@ -22,7 +22,7 @@ const TeachersList = ({ onSubmit }) => {
   };
 
   const handleSelect = (teacher) => {
-    setQuery(`${teacher.teacherName} ${teacher.teacherLastName}`);
+    setQuery(`${teacher.teacherName}`);
     setResults([]);
     onSubmit(teacher);
   };
@@ -60,7 +60,7 @@ const TeachersList = ({ onSubmit }) => {
               onClick={() => handleSelect(teacher)} 
               className="result-item"
             >
-              {teacher.teacherName} {teacher.teacherLastName}
+              {teacher.teacherName}
             </li>
           ))}
         </ul>

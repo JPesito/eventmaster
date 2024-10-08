@@ -1,9 +1,12 @@
 const express = require('express');
-const mysql = require('mysql2/promise'); // Cambiado para usar promesas
+const mysql = require('mysql2/promise'); // Para usar promesas
+const bcrypt = require('bcrypt'); // Asegúrate de tener bcrypt instalado
+const jwt = require('jsonwebtoken'); // Asegúrate de tener jsonwebtoken instalado
 const cors = require('cors');
-const moment = require('moment');
-
+const { format } = require('date-fns'); // Usaremos date-fns para el formato de fechas
 const app = express();
+
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
@@ -16,7 +19,7 @@ const initializeDbConnection = async () => {
       host: 'localhost',
       user: 'root',
       password: 'FUH2024**',
-      database: 'eventmestre'
+      database: 'eventmaster',
     });
     console.log('Connected to database');
   } catch (err) {
@@ -28,60 +31,49 @@ const initializeDbConnection = async () => {
 // Inicializar la conexión
 initializeDbConnection();
 
-
 /********  Login ********/
-
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
+  console.log('Datos recibidos:', { username, password });
+
   try {
-    // Consulta SQL para verificar si el usuario existe
     const sql = 'SELECT * FROM users WHERE userName = ?';
-    db.query(sql, [username], (err, results) => {
-      if (err) {
-        return res.status(500).json({ message: 'Error al buscar el usuario' });
-      }
+    const [results] = await db.query(sql, [username]);
 
-      if (results.length > 0) {
-        const user = results[0];
+    if (results.length > 0) {
 
-        // Comparar las contraseñas usando bcrypt
-        bcrypt.compare(password, user.password, (err, isMatch) => {
-          if (err) {
-            return res.status(500).json({ message: 'Error al comparar contraseñas' });
-          }
 
-          if (isMatch) {
-            // Generar un token JWT
-            const token = jwt.sign(
-              { id: user.id, username: user.userName }, // Usa userName en vez de username si así está en la tabla
-              'secret_key',
-              { expiresIn: '1h' }
-            );
-            res.json({ token });
-          } else {
-            // Si la contraseña es incorrecta
-            return res.status(401).json({ message: 'Contraseña incorrecta' });
-          }
-        });
+      // Comparar contraseñas
+      const isMatch = await bcrypt.compare(password, user.userPassword);
+
+      console.log('Contraseña ingresada:', password);
+      console.log('Hash almacenado:', user.userPassword);
+      console.log('Resultado comparación:', isMatch);
+
+      if (isMatch) {
+        // Contraseña correcta
+        const token = jwt.sign(
+          { id: user.id, username: user.userName },
+          'secret_key',
+          { expiresIn: '1h' }
+        );
+        res.json({ token });
       } else {
-        // Si el usuario no existe
-        return res.status(404).json({ message: 'Usuario no encontrado' });
+        return res.status(401).json({ message: 'Contraseña incorrecta. Intenta nuevamente.' });
       }
-    });
+    } else {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
   } catch (error) {
-    // Manejo de cualquier error inesperado
     res.status(500).json({ message: 'Error en el servidor' });
   }
 });
 
 
-
-
 /********  Peticiones GET ********/
 
 // Tecnologias y/o Herramientas
-
 app.get('/tools/search', async (req, res) => {
   const { query } = req.query;
 
@@ -90,17 +82,31 @@ app.get('/tools/search', async (req, res) => {
   }
 
   try {
-    const [results] = await db.query('SELECT * FROM tools WHERE nameTool LIKE ? ', [`%${query}%`]);
+    const [results] = await db.query('SELECT * FROM tools WHERE nameTool LIKE ?', [`%${query}%`]);
     res.json(results);
   } catch (err) {
-    console.error('Error searching teachers:', err);
-    res.status(500).json({ message: 'Error searching teachers' });
+    console.error('Error searching tools:', err);
+    res.status(500).json({ message: 'Error searching tools' });
   }
 });
 
+//Obtener profesores
+
+app.get('/teachers/search', async (req, res) => {
+  const { query } = req.query;
+
+  try {
+    const sql = 'SELECT * FROM teachers WHERE teacherName LIKE ?';
+    const [results] = await db.query(sql, [`%${query}%`]);
+
+    res.json(results);
+  } catch (error) {
+    console.error('Error en la búsqueda de profesores:', error);
+    res.status(500).json({ message: 'Error en el servidor' });
+  }
+});
 
 // Obtener programas
-
 app.get('/programs', async (req, res) => {
   try {
     const [results] = await db.query('SELECT id, namePrograms FROM programs');
@@ -111,19 +117,16 @@ app.get('/programs', async (req, res) => {
   }
 });
 
-
-//Obtener periodos academicos
-
+// Obtener periodos académicos
 app.get('/academicperiod', async (req, res) => {
   try {
-    const [results] = await db.query('SELECT id, academicSemester FROM academicperiod'); 
+    const [results] = await db.query('SELECT id, academicSemester FROM academicperiod');
     res.json(results);
   } catch (error) {
-    console.error('Error al obtener programas:', error);
-    res.status(500).json({ error: 'Error al obtener programas' });
+    console.error('Error al obtener periodos académicos:', error);
+    res.status(500).json({ error: 'Error al obtener periodos académicos' });
   }
 });
-
 
 // Ruta para obtener eventos
 app.get('/events', async (req, res) => {
@@ -138,7 +141,7 @@ app.get('/events', async (req, res) => {
 
 // Registrar uso de sala
 app.put('/events/:id', async (req, res) => {
-  const { id } = req.params; 
+  const { id } = req.params;
   const { numStudents, isUsed } = req.body;
 
   try {
@@ -153,7 +156,7 @@ app.put('/events/:id', async (req, res) => {
 
 // Listado de clases activas
 app.get('/events/:teacherId', async (req, res) => {
-  const teacherId = req.params.teacherId;
+  const { teacherId } = req.params;
   const sql = `
     SELECT 
         subjects.nameSubject, 
@@ -172,8 +175,8 @@ app.get('/events/:teacherId', async (req, res) => {
   `;
 
   try {
-    const [result] = await db.query(sql, [teacherId]);
-    const eventsWithFormattedDates = result.map(event => ({
+    const [results] = await db.query(sql, [teacherId]);
+    const eventsWithFormattedDates = results.map(event => ({
       ...event,
       startTime: new Date(event.startTime).toISOString(),
       endTime: new Date(event.endTime).toISOString(),
@@ -185,27 +188,15 @@ app.get('/events/:teacherId', async (req, res) => {
   }
 });
 
-// Obtener salas
-app.get('/rooms', async (req, res) => {
-  try {
-    const [results] = await db.query('SELECT * FROM rooms');
-    res.json(results);
-  } catch (err) {
-    console.error('Error fetching rooms:', err);
-    res.status(500).json({ message: 'Error fetching rooms' });
-  }
-});
-
 // Crear eventos
 app.post('/events', async (req, res) => {
   const { title, start, end, room } = req.body;
 
-  const startDateMySQL = moment(start).format('YYYY-MM-DD HH:mm:ss');
-  const endDateMySQL = moment(end).format('YYYY-MM-DD HH:mm:ss');
+  const startDateMySQL = format(new Date(start), 'yyyy-MM-dd HH:mm:ss');
+  const endDateMySQL = format(new Date(end), 'yyyy-MM-dd HH:mm:ss');
 
-  const query = 'INSERT INTO events (title, start, end, room) VALUES (?, ?, ?, ?)';
   try {
-    const [results] = await db.query(query, [title, startDateMySQL, endDateMySQL, room]);
+    const [results] = await db.query('INSERT INTO events (title, start, end, room) VALUES (?, ?, ?, ?)', [title, startDateMySQL, endDateMySQL, room]);
     res.json({ id: results.insertId });
   } catch (err) {
     console.error('Error creating event:', err);
@@ -213,14 +204,14 @@ app.post('/events', async (req, res) => {
   }
 });
 
-// Búsqueda de Programas
+// Búsqueda de programas
 app.get('/programs/search', async (req, res) => {
   const { query } = req.query;
 
   if (query.length < 2) {
     return res.json([]);
   }
-  
+
   try {
     const [results] = await db.query('SELECT * FROM programs WHERE namePrograms LIKE ?', [`%${query}%`]);
     res.json(results);
@@ -230,70 +221,6 @@ app.get('/programs/search', async (req, res) => {
   }
 });
 
-// Búsqueda de Asignaturas
-app.get('/subjects/search', async (req, res) => {
-  const { query, programid } = req.query;
-
-  if (!programid) {
-    return res.status(400).json({ message: 'El ID del programa es requerido.' });
-  }
-
-  if (!query || query.length < 2) {
-    return res.json([]);
-  }
-
-  try {
-    const [results] = await db.query(
-      'SELECT * FROM subjects WHERE nameSubject LIKE ? AND programid = ?',
-      [`%${query}%`, programid]
-    );
-    res.json(results);
-  } catch (err) {
-    console.error('Error searching subjects:', err);
-    res.status(500).json({ message: 'Error searching subjects' });
-  }
-});
-
-// Búsqueda de Profesores
-app.get('/teachers/search', async (req, res) => {
-  const { query } = req.query;
-
-  if (query.length < 2) {
-    return res.json([]);
-  }
-
-  try {
-    const [results] = await db.query('SELECT * FROM teachers WHERE teacherName LIKE ?', [`%${query}%`]);
-    res.json(results);
-  } catch (err) {
-    console.error('Error searching teachers:', err);
-    res.status(500).json({ message: 'Error searching teachers' });
-  }
-});
-
-// Disponibilidad de Salas
-app.get('/rooms/availability', async (req, res) => {
-  const sql = `
-    SELECT rooms.id, rooms.roomName, 
-    (SELECT COUNT(*) FROM events WHERE events.roomID = rooms.id AND 
-    (start < NOW() AND end > NOW())) AS isBooked
-    FROM rooms
-  `;
-  
-  try {
-    const [results] = await db.query(sql);
-    const availableRooms = results.map(room => ({
-      ...room,
-      isAvailable: room.isBooked === 0,
-    }));
-    res.json(availableRooms);
-  } catch (err) {
-    console.error('Error fetching room availability:', err);
-    res.status(500).json({ message: 'Error fetching room availability' });
-  }
-});
-
 // Puerto
 const PORT = 5000;
-
 app.listen(PORT, () => console.log('Server running on port', PORT));

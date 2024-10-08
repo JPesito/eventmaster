@@ -80,7 +80,8 @@ const FloatingObject = styled(motion.div)(({ theme }) => ({
   boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.2)',
 }));
 
-const InnovativeLogin = () => {
+const LoginUsers = () => {
+
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -95,14 +96,25 @@ const InnovativeLogin = () => {
       // Llamada al backend para validar el login
       const response = await axios.post(`${API_BASE_URL}/login`, { username, password });
 
-      // Guardar token en localStorage
-      localStorage.setItem('token', response.data.token);
-
-      // Redirigir al usuario a la página de dashboard
-      navigate('/dashboard');
+      // Guardar token en localStorage si la respuesta es exitosa
+      if (response.status === 200) {
+        localStorage.setItem('token', response.data.token);
+        navigate('/form-reservation');
+      }
     } catch (error) {
-      // Manejo de errores
-      setError('Credenciales incorrectas. Intenta nuevamente.');
+      if (error.response) {
+        // Si el servidor responde con un error
+        if (error.response.status === 401) {
+          setError('Contraseña incorrecta. Intenta nuevamente.');
+        } else if (error.response.status === 404) {
+          setError('Usuario no encontrado.');
+        } else {
+          setError('Error en el servidor. Intenta más tarde.');
+        }
+      } else {
+        // Si hay un error en la petición
+        setError('Error en la conexión.');
+      }
     }
   };
 
@@ -231,4 +243,4 @@ const InnovativeLogin = () => {
   );
 };
 
-export default InnovativeLogin;
+export default LoginUsers;

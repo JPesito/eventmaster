@@ -13,6 +13,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { motion } from 'framer-motion';
+import TeachersList from './TeachersList'
 import RoomsList from './RoomsList';
 import ProgramsList from './ProgramsList';
 import SubjectsList from './SubjectsList';
@@ -129,16 +130,7 @@ const FormReservation = () => {
               Reserva de Sala
             </Typography>
             <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-              <TextField
-                fullWidth
-                label="Nombre del Profesor"
-                name="nombreProfesor"
-                value={formData.nombreProfesor}
-                onChange={handleInputChange}
-                margin="normal"
-                required
-                variant="outlined"
-              />
+              <TeachersList />
               <TextField
                 fullWidth
                 label="Tecnologías"
