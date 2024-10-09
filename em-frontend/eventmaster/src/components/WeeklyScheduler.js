@@ -1,24 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
-import axios from 'axios'; // Importa Axios
+import axios from 'axios';
 import 'moment/locale/es';
 import API_BASE_URL from '../config';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { 
-  Button, 
-  Dialog, 
-  DialogActions, 
-  DialogContent, 
-  DialogTitle, 
-  TextField,
-  Box,
-  Typography
-} from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box, Typography } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import TeachersList from './TeachersList';
+import ProgramsList from './ProgramsList';
+import SubjectsList from './SubjectsList';
 
 moment.locale('es');
 const localizer = momentLocalizer(moment);
@@ -31,10 +25,15 @@ const theme = createTheme({
   },
 });
 
-const WeeklyScheduler = () => {
+const WeeklyScheduler = ({ selectedRoomId }) => {
   const [events, setEvents] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newEvent, setNewEvent] = useState({ title: '', start: null, end: null });
+  const [newEvent, setNewEvent] = useState({ start: null, end: null });
+  
+  // Estados para los datos del formulario
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
+  const [selectedProgramId, setSelectedProgramId] = useState(null);
+  const [selectedSubject, setSelectedSubject] = useState(null);
 
   // Cargar los eventos desde la base de datos al montar el componente
   useEffect(() => {
@@ -42,7 +41,7 @@ const WeeklyScheduler = () => {
       .then(response => {
         const dbEvents = response.data.map(event => ({
           ...event,
-          start: new Date(event.start), // Convierte la fecha de la base de datos a un objeto Date
+          start: new Date(event.start),
           end: new Date(event.end),
         }));
         setEvents(dbEvents);
@@ -53,7 +52,7 @@ const WeeklyScheduler = () => {
   }, []);
 
   const handleSelectSlot = ({ start, end }) => {
-    setNewEvent({ title: '', start: moment(start), end: moment(end) });
+    setNewEvent({ start: moment(start), end: moment(end) });
     setIsModalOpen(true);
   };
 
@@ -65,30 +64,34 @@ const WeeklyScheduler = () => {
   };
 
   const handleSaveEvent = () => {
-    console.log('Nuevo evento:', newEvent); // Depuración
-    if (newEvent.title && newEvent.start && newEvent.end) {
-      const eventToSave = {
-        ...newEvent,
-        start: newEvent.start.format('YYYY-MM-DD HH:mm:ss'), // Formatea la fecha
-        end: newEvent.end.format('YYYY-MM-DD HH:mm:ss'),   // Formatea la fecha
-      };
-      
-      axios.post(`${API_BASE_URL}/events`, eventToSave)
-        .then(response => {
-          const savedEvent = response.data;
-          setEvents([...events, { ...savedEvent, start: new Date(savedEvent.start), end: new Date(savedEvent.end) }]);
-          setIsModalOpen(false);
-          setNewEvent({ title: '', start: null, end: null }); // Reinicia los valores del evento
-        })
-        .catch(error => {
-          console.error('Error al guardar el evento:', error);
-        });
-    } else {
-      console.log('Faltan datos del evento'); // Depuración
-    }
-  };
+  console.log('Nuevo evento:', newEvent); // Depuración
+  if (newEvent.start && newEvent.end && selectedRoomId && selectedTeacherId && selectedProgramId && selectedSubjectId) {
+    const eventToSave = {
+      roomID: selectedRoomId, // Asegúrate de que esta variable tenga un valor
+      teacherID: selectedTeacherId, // Asegúrate de que esta variable tenga un valor
+      programID: selectedProgramId, // Asegúrate de que esta variable tenga un valor
+      subjectID: selectedSubjectId, // Asegúrate de que esta variable tenga un valor
+      start: newEvent.start.format('YYYY-MM-DD HH:mm:ss'), // Formatea la fecha
+      end: newEvent.end.format('YYYY-MM-DD HH:mm:ss'), // Formatea la fecha
+    };
+    
+    axios.post(`${API_BASE_URL}/events`, eventToSave)
+      .then(response => {
+        const savedEvent = response.data;
+        setEvents([...events, { ...savedEvent, start: new Date(savedEvent.start), end: new Date(savedEvent.end) }]);
+        setIsModalOpen(false);
+        setNewEvent({ start: null, end: null }); // Reinicia los valores del evento
+      })
+      .catch(error => {
+        console.error('Error al guardar el evento:', error);
+      });
+  } else {
+    console.log('Faltan datos del evento', { selectedRoomId, selectedTeacherId, selectedProgramId, selectedSubjectId }); // Depuración
+  }
+};
 
-  const eventStyleGetter = (event, start, end, isSelected) => {
+
+  const eventStyleGetter = (event) => {
     const style = {
       backgroundColor: '#3182ce',
       borderRadius: '4px',
@@ -124,9 +127,6 @@ const WeeklyScheduler = () => {
               min={new Date(2024, 0, 1, 7, 0)}
               max={new Date(2024, 0, 1, 22, 0)}
               toolbar={false}
-              formats={{
-                dayFormat: 'ddd',
-              }}
               eventPropGetter={eventStyleGetter}
             />
           </Box>
@@ -134,17 +134,9 @@ const WeeklyScheduler = () => {
           <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)}>
             <DialogTitle>Nuevo Evento</DialogTitle>
             <DialogContent>
-              <TextField
-                autoFocus
-                margin="dense"
-                id="title"
-                label="Título del evento"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={newEvent.title}
-                onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-              />
+              <TeachersList onSubmit={setSelectedTeacher} />
+              <ProgramsList onSubmit={setSelectedProgramId} />
+              <SubjectsList programId={selectedProgramId} onSubmit={setSelectedSubject} />
               <DateTimePicker
                 label="Inicio"
                 value={newEvent.start}

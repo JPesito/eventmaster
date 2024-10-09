@@ -5,6 +5,7 @@ const ProgramsList = ({ onSubmit }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
 
+  // Buscar programas al cambiar el input
   const handleChange = async (e) => {
     const value = e.target.value;
     setQuery(value);
@@ -18,10 +19,11 @@ const ProgramsList = ({ onSubmit }) => {
     }
   };
 
+  // Manejar la selección de un programa
   const handleSelect = (program) => { 
-    setQuery(program.namePrograms);
-    setResults([]);
-    onSubmit(program.id);
+    setQuery(program.namePrograms); // Mostrar el nombre del programa en el input
+    setResults([]); // Ocultar resultados después de la selección
+    onSubmit(program.id); // Pasar el ID del programa al componente padre
   };
 
   return (

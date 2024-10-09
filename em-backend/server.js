@@ -108,6 +108,20 @@ app.get('/teachers/search', async (req, res) => {
   }
 });
 
+
+//Obtener salones
+
+app.get('/rooms', async (req, res) => {
+  try {
+    const [results] = await db.query('SELECT id, roomName FROM rooms');
+    res.json(results);
+  } catch (err) {
+    console.error('Error fetching events:', err);
+    res.status(500).json({ message: 'Error fetching events' });
+  }
+});
+
+
 // Obtener programas
 app.get('/programs', async (req, res) => {
   try {
@@ -145,13 +159,16 @@ app.get('/events', async (req, res) => {
 // Crear eventos
 
 app.post('/events', async (req, res) => {
-  const { title, start, end } = req.body;
+  const { roomID, teacherID, programID, subjectID, start, end } = req.body; // Asegúrate de que estos son los campos que se están enviando
 
   const startDateMySQL = format(new Date(start), 'yyyy-MM-dd HH:mm:ss');
   const endDateMySQL = format(new Date(end), 'yyyy-MM-dd HH:mm:ss');
 
   try {
-    const [results] = await db.query('INSERT INTO events (title, start, end ) VALUES (?, ?, ?)', [title, startDateMySQL, endDateMySQL]);
+    const [results] = await db.query(
+      'INSERT INTO events (roomID, teacherID, programID, subjectID, startTime, endTime, academicPeriodID) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [roomID, teacherID, programID, subjectID, startDateMySQL, endDateMySQL, 1]
+    );
     res.json({ id: results.insertId });
   } catch (err) {
     console.error('Error creating event:', err);
@@ -213,6 +230,7 @@ app.get('/events/:teacherId', async (req, res) => {
 
 
 // Búsqueda de programas
+
 app.get('/programs/search', async (req, res) => {
   const { query } = req.query;
 
@@ -228,6 +246,50 @@ app.get('/programs/search', async (req, res) => {
     res.status(500).json({ message: 'Error searching programs' });
   }
 });
+
+
+//Busqueda de asignaturas
+
+app.get('/subjects/search', async (req, res) => {
+  const { query, programid } = req.query;
+
+  // Asegúrate de que `programid` esté presente
+  if (!programid) {
+      return res.status(400).json({ error: 'El ID del programa es requerido' });
+  }
+
+  // Validar que el query tenga al menos dos caracteres
+  if (query && query.length < 2) {
+      return res.status(400).json({ error: 'El término de búsqueda debe tener al menos 2 caracteres' });
+  }
+
+  // Construir la consulta SQL
+  let sql = `SELECT * FROM subjects WHERE programid = ?`;
+  const params = [programid];
+
+  // Si hay un término de búsqueda (`query`), añadirlo a la consulta
+  if (query) {
+      sql += ` AND nameSubject LIKE ?`;
+      params.push(`%${query}%`); // Agrega comodines para la búsqueda parcial
+  }
+
+  console.log('SQL Query:', sql); // Log de la consulta SQL
+  console.log('Params:', params); // Log de los parámetros
+
+  // Ejecutar la consulta
+  try {
+    const [results] = await db.query(sql, params);
+    if (results.length === 0) {
+      console.log('No results found'); // Log si no hay resultados
+    }
+    res.json(results); // Enviar los resultados al frontend
+  } catch (err) {
+    console.error('Error ejecutando la consulta:', err); // Log de errores
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 // Puerto
 const PORT = 5000;

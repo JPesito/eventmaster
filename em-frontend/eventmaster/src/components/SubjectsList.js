@@ -10,24 +10,32 @@ const SubjectsList = ({ onSubmit, programId }) => {
     setQuery(value);
 
     if (value.length >= 2 && programId) {
-      const response = await fetch(`${API_BASE_URL}/subjects/search?query=${value}&programid=${programId}`);
-      const data = await response.json();
-      setResults(data);
+      try {
+        const response = await fetch(`${API_BASE_URL}/subjects/search?query=${value}&programid=${programId}`);
+        if (!response.ok) {
+          throw new Error('Error fetching subjects');
+        }
+        const data = await response.json();
+        setResults(data);
+      } catch (error) {
+        console.error('Error fetching subjects:', error); // Muestra el error en consola
+        setResults([]);
+      }
     } else {
-      setResults([]);
+      setResults([]); // Limpia los resultados si no se cumplen las condiciones
     }
   };
 
   const handleSelect = (subject) => { 
-    setQuery(subject.nameSubject);
-    setResults([]);
-    onSubmit(subject);
+    setQuery(subject.nameSubject); // Mostrar la asignatura seleccionada en el input
+    setResults([]); // Ocultar resultados después de la selección
+    onSubmit(subject); // Pasar la asignatura seleccionada al componente padre
   };
 
+  // Limpiar la búsqueda si cambia el programId
   useEffect(() => {
-    if (programId) {
-      setResults([]);
-    }
+    setQuery(''); // Limpiar el campo de búsqueda cuando cambia el programa
+    setResults([]); // Limpiar los resultados
   }, [programId]);
 
   return (
@@ -37,6 +45,7 @@ const SubjectsList = ({ onSubmit, programId }) => {
         value={query}
         onChange={handleChange}
         placeholder="Buscar asignatura..."
+        disabled={!programId} 
       />
       {results.length > 0 && (
         <ul>
