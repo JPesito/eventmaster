@@ -32,17 +32,17 @@ const initializeDbConnection = async () => {
 initializeDbConnection();
 
 /********  Login ********/
-app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
 
-  console.log('Datos recibidos:', { username, password });
+app.post('/login', async (req, res) => {
+
+  const { username, password } = req.body;
 
   try {
     const sql = 'SELECT * FROM users WHERE userName = ?';
     const [results] = await db.query(sql, [username]);
 
     if (results.length > 0) {
-
+      const user = results[0]; // Usar el primer resultado
 
       // Comparar contraseñas
       const isMatch = await bcrypt.compare(password, user.userPassword);
@@ -58,7 +58,7 @@ app.post('/login', async (req, res) => {
           'secret_key',
           { expiresIn: '1h' }
         );
-        res.json({ token });
+        return res.json({ token });
       } else {
         return res.status(401).json({ message: 'Contraseña incorrecta. Intenta nuevamente.' });
       }
@@ -66,9 +66,11 @@ app.post('/login', async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
   } catch (error) {
+    console.error('Error en el servidor:', error); // Log de error más detallado
     res.status(500).json({ message: 'Error en el servidor' });
   }
 });
+
 
 
 /********  Peticiones GET ********/
@@ -129,6 +131,7 @@ app.get('/academicperiod', async (req, res) => {
 });
 
 // Ruta para obtener eventos
+
 app.get('/events', async (req, res) => {
   try {
     const [results] = await db.query('SELECT * FROM events');
@@ -138,6 +141,26 @@ app.get('/events', async (req, res) => {
     res.status(500).json({ message: 'Error fetching events' });
   }
 });
+
+// Crear eventos
+
+app.post('/events', async (req, res) => {
+  const { title, start, end } = req.body;
+
+  const startDateMySQL = format(new Date(start), 'yyyy-MM-dd HH:mm:ss');
+  const endDateMySQL = format(new Date(end), 'yyyy-MM-dd HH:mm:ss');
+
+  try {
+    const [results] = await db.query('INSERT INTO events (title, start, end ) VALUES (?, ?, ?)', [title, startDateMySQL, endDateMySQL]);
+    res.json({ id: results.insertId });
+  } catch (err) {
+    console.error('Error creating event:', err);
+    res.status(500).json({ message: 'Error creating event' });
+  }
+});
+
+
+
 
 // Registrar uso de sala
 app.put('/events/:id', async (req, res) => {
@@ -188,21 +211,6 @@ app.get('/events/:teacherId', async (req, res) => {
   }
 });
 
-// Crear eventos
-app.post('/events', async (req, res) => {
-  const { title, start, end, room } = req.body;
-
-  const startDateMySQL = format(new Date(start), 'yyyy-MM-dd HH:mm:ss');
-  const endDateMySQL = format(new Date(end), 'yyyy-MM-dd HH:mm:ss');
-
-  try {
-    const [results] = await db.query('INSERT INTO events (title, start, end, room) VALUES (?, ?, ?, ?)', [title, startDateMySQL, endDateMySQL, room]);
-    res.json({ id: results.insertId });
-  } catch (err) {
-    console.error('Error creating event:', err);
-    res.status(500).json({ message: 'Error creating event' });
-  }
-});
 
 // Búsqueda de programas
 app.get('/programs/search', async (req, res) => {

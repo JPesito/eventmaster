@@ -99,7 +99,7 @@ const LoginUsers = () => {
       // Guardar token en localStorage si la respuesta es exitosa
       if (response.status === 200) {
         localStorage.setItem('token', response.data.token);
-        navigate('/form-reservation');
+        navigate('/home');
       }
     } catch (error) {
       if (error.response) {

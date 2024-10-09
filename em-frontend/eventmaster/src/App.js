@@ -1,12 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
-import CalendarDashboard from './components/CalendarDashboard';
+import WeeklyScheduler from './components/WeeklyScheduler';
 import Home from './components/Home';
 import Navbar from './components/Navbar';
 import SuccessMessage from './components/SuccessMessage';
 import HomeReports from './components/reports/HomeReports';
-import FormReservation from './components/FormReservation'
+import HomeUser from './components/users/HomeUser'
 import LoginUsers from './components/login/LoginUsers';
 import ProtectedRoute from './components/login/ProtectedRoute';
 import './styles.css'; 
@@ -30,8 +30,8 @@ const AnimatedRoutes = () => {
         <Routes location={location}>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginUsers />} />
-          <Route path="/events" element={<CalendarDashboard />} />
-          <Route path="/form-reservation" element={<FormReservation />} />
+          <Route path="/events" element={<WeeklyScheduler />} />
+          <Route path="/home" element={<HomeUser />} />
           <Route path="/reports" element={<HomeReports />} />
           <Route path="/about" element={<About />} />
           <Route path="/success" element={<SuccessMessage />} />
