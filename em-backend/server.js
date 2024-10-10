@@ -3,7 +3,7 @@ const mysql = require('mysql2/promise'); // Para usar promesas
 const bcrypt = require('bcrypt'); // Asegúrate de tener bcrypt instalado
 const jwt = require('jsonwebtoken'); // Asegúrate de tener jsonwebtoken instalado
 const cors = require('cors');
-const { format } = require('date-fns'); // Usaremos date-fns para el formato de fechas
+const { format, isValid, parseISO } = require('date-fns'); // Usaremos date-fns para el formato de fechas
 const app = express();
 
 // Middlewares
@@ -46,10 +46,6 @@ app.post('/login', async (req, res) => {
 
       // Comparar contraseñas
       const isMatch = await bcrypt.compare(password, user.userPassword);
-
-      console.log('Contraseña ingresada:', password);
-      console.log('Hash almacenado:', user.userPassword);
-      console.log('Resultado comparación:', isMatch);
 
       if (isMatch) {
         // Contraseña correcta
@@ -146,28 +142,50 @@ app.get('/academicperiod', async (req, res) => {
 
 // Ruta para obtener eventos
 
-app.get('/events', async (req, res) => {
+app.get('/eventsroom', async (req, res) => {
+
+  const { roomID } = req.query;
+
+  if (!roomID) {
+    return res.status(400).json({ error: 'Se requiere el ID de la sala (roomID)' });
+  }
+
+  const query = 'SELECT teachers.teacherName, subjects.nameSubject, events.* FROM events JOIN teachers ON events.teacherid = teachers.id JOIN subjects ON events.subjectid = subjects.id WHERE events.roomID = ?';
+
   try {
-    const [results] = await db.query('SELECT * FROM events');
+    const [results] = await db.query(query, [roomID]);
+
     res.json(results);
   } catch (err) {
-    console.error('Error fetching events:', err);
-    res.status(500).json({ message: 'Error fetching events' });
+    console.error('Error al obtener los eventos:', err);
+    res.status(500).json({ error: 'Error al obtener los eventos' });
   }
 });
+
+
+
+
 
 // Crear eventos
 
 app.post('/events', async (req, res) => {
-  const { roomID, teacherID, programID, subjectID, start, end } = req.body; // Asegúrate de que estos son los campos que se están enviando
+  const { roomID, teacherID, programID, subjectID, start, end } = req.body;
 
+  // Cambiar esto
   const startDateMySQL = format(new Date(start), 'yyyy-MM-dd HH:mm:ss');
   const endDateMySQL = format(new Date(end), 'yyyy-MM-dd HH:mm:ss');
 
+  // Validación de fechas
+  const startDate = parseISO(start);
+  const endDate = parseISO(end);
+  if (!isValid(startDate) || !isValid(endDate)) {
+    return res.status(400).json({ error: 'Fechas no válidas' });
+  }
+
   try {
     const [results] = await db.query(
-      'INSERT INTO events (roomID, teacherID, programID, subjectID, startTime, endTime, academicPeriodID) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [roomID, teacherID, programID, subjectID, startDateMySQL, endDateMySQL, 1]
+      'INSERT INTO events (roomID, teacherID, programID, subjectID, startTime, endTime, academicPeriodID, numStudents, isUsed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [roomID, teacherID, programID, subjectID, startDateMySQL, endDateMySQL, 1, 0, false]
     );
     res.json({ id: results.insertId });
   } catch (err) {
@@ -273,10 +291,6 @@ app.get('/subjects/search', async (req, res) => {
       params.push(`%${query}%`); // Agrega comodines para la búsqueda parcial
   }
 
-  console.log('SQL Query:', sql); // Log de la consulta SQL
-  console.log('Params:', params); // Log de los parámetros
-
-  // Ejecutar la consulta
   try {
     const [results] = await db.query(sql, params);
     if (results.length === 0) {
