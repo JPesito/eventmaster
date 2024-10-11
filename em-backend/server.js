@@ -165,6 +165,48 @@ app.get('/eventsroom', async (req, res) => {
 
 
 
+//Eliminar eventos
+
+app.delete('/events/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [result] = await db.query('DELETE FROM events WHERE id = ?', [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Evento no encontrado' });
+    }
+
+    res.status(200).json({ message: 'Evento eliminado correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar el evento:', error);
+    res.status(500).json({ message: 'Error al eliminar el evento' });
+  }
+});
+
+//Modificar evento
+
+app.put('/events/:id', async (req, res) => {
+  const { id } = req.params;
+  const { roomID, teacherID, programID, subjectID, start, end } = req.body;
+
+  try {
+    const [result] = await db.query(
+      'UPDATE events SET roomID = ?, teacherID = ?, programID = ?, subjectID = ?, startTime = ?, endTime = ? WHERE id = ?',
+      [roomID, teacherID, programID, subjectID, start, end, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Evento no encontrado' });
+    }
+
+    res.status(200).json({ message: 'Evento modificado correctamente' });
+  } catch (error) {
+    console.error('Error al modificar el evento:', error);
+    res.status(500).json({ message: 'Error al modificar el evento' });
+  }
+});
+
 
 // Crear eventos
 
