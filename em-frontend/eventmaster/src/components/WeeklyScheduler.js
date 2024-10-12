@@ -33,6 +33,8 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
   const [selectedProgramId, setSelectedProgramId] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [repeatEvent, setRepeatEvent] = useState(false);
+  const [dateRange, setDateRange] = useState([null, null]);
 
   useEffect(() => {
     if (!selectedRoomId) return;
@@ -103,11 +105,6 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
       return;
     }
   
-    if (isOverlapping(currentEvent.start.toDate(), currentEvent.end.toDate(), currentEvent.id)) {
-      setShowErrorMessage(true);
-      return;
-    }
-  
     const eventToSave = {
       id: currentEvent.id,
       roomID: selectedRoomId,
@@ -120,6 +117,7 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
   
     try {
       let savedEvent;
+  
       if (isEditMode) {
         const response = await axios.put(`${API_BASE_URL}/events/${currentEvent.id}`, eventToSave);
         savedEvent = response.data;
@@ -128,19 +126,26 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
         savedEvent = response.data;
       }
   
-      setEvents((prevEvents) => {
-        const updatedEvents = isEditMode
-          ? prevEvents.map(event => event.id === savedEvent.id ? savedEvent : event)
-          : [...prevEvents, savedEvent];
-        
-        return updatedEvents.map(event => ({
-          ...event,
-          start: moment(event.startTime).toDate(),
-          end: moment(event.endTime).toDate(),
-          title: `${event.teacherName} - ${event.nameSubject}`
-        }));
-      });
+      // Si el evento se va a repetir
+      if (repeatEvent && dateRange[0] && dateRange[1]) {
+        const currentDayOfWeek = moment(currentEvent.start).day();
+        const startDate = moment(dateRange[0]);
+        const endDate = moment(dateRange[1]);
   
+        // Itera por cada semana dentro del rango de fechas
+        let currentRepeatDate = startDate.clone().day(currentDayOfWeek);
+        while (currentRepeatDate.isBefore(endDate)) {
+          const repeatEventToSave = {
+            ...eventToSave,
+            start: currentRepeatDate.clone().hour(currentEvent.start.hour()).minute(currentEvent.start.minute()).format('YYYY-MM-DD HH:mm:ss'),
+            end: currentRepeatDate.clone().hour(currentEvent.end.hour()).minute(currentEvent.end.minute()).format('YYYY-MM-DD HH:mm:ss'),
+          };
+          await axios.post(`${API_BASE_URL}/events`, repeatEventToSave);
+          currentRepeatDate.add(1, 'week');  // Avanza una semana
+        }
+      }
+  
+      setEvents((prevEvents) => [...prevEvents, savedEvent]);
       setIsModalOpen(false);
       setCurrentEvent(null);
       setShowSuccessMessage(true);
@@ -149,6 +154,7 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
       setShowErrorMessage(true);
     }
   };
+  
 
   const eventStyleGetter = () => {
     return {
@@ -203,6 +209,10 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
               handleSaveEvent={handleSaveEvent} 
               handleDeleteEvent={handleDeleteEvent}
               isEditMode={isEditMode}
+              repeatEvent={repeatEvent} 
+              setRepeatEvent={setRepeatEvent} 
+              dateRange={dateRange} 
+              setDateRange={setDateRange} 
             />
           )}
 

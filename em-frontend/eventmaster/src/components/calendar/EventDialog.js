@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField } from '@mui/material';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { useState, useEffect } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { TextField, Button, Checkbox, FormControlLabel } from '@mui/material';
+import { DateTimePicker } from '@mui/x-date-pickers';
+import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker'; // Importar desde 'pro'
+import moment from 'moment';
 import TeachersList from '../TeachersList';
 import ProgramsList from '../ProgramsList';
 import SubjectsList from '../SubjectsList';
-import moment from 'moment';
 
 const EventDialog = ({
   isModalOpen, 
@@ -21,7 +23,9 @@ const EventDialog = ({
   handleDeleteEvent,
   isEditMode
 }) => {
-  // Asegúrate de que el modal tenga la información del evento seleccionado
+  const [repeatEvent, setRepeatEvent] = useState(false);  // Controlar si se repite el evento
+  const [dateRange, setDateRange] = useState([null, null]);  // Rango de fechas para la repetición
+
   useEffect(() => {
     if (currentEvent) {
       setSelectedTeacher({ id: currentEvent.teacherID, name: currentEvent.teacherName });
@@ -30,7 +34,13 @@ const EventDialog = ({
     }
   }, [currentEvent, setSelectedTeacher, setSelectedProgramId, setSelectedSubject]);
 
-  if (!currentEvent) return null;
+  const handleRepeatChange = (event) => {
+    setRepeatEvent(event.target.checked); // Cambiar si el evento se repite o no
+  };
+
+  const handleDateRangeChange = (newRange) => {
+    setDateRange(newRange);  // Guardar el nuevo rango de fechas seleccionado
+  };
 
   return (
     <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)}>
@@ -42,7 +52,7 @@ const EventDialog = ({
         
         <DateTimePicker
           label="Inicio"
-          value={moment(currentEvent.start)}  // Asegúrate de usar moment
+          value={moment(currentEvent.start)}
           onChange={(newValue) => {
             if (newValue && moment.isMoment(newValue)) {
               setCurrentEvent((prev) => ({ ...prev, start: newValue }));
@@ -53,7 +63,7 @@ const EventDialog = ({
         
         <DateTimePicker
           label="Fin"
-          value={moment(currentEvent.end)}  // Asegúrate de usar moment
+          value={moment(currentEvent.end)}
           onChange={(newValue) => {
             if (newValue && moment.isMoment(newValue)) {
               setCurrentEvent((prev) => ({ ...prev, end: newValue }));
@@ -61,6 +71,26 @@ const EventDialog = ({
           }}
           renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
         />
+
+        <FormControlLabel
+          control={<Checkbox checked={repeatEvent} onChange={handleRepeatChange} />}
+          label="¿Repetir este evento semanalmente?"
+        />
+
+        {repeatEvent && (
+          <DateRangePicker
+            startText="Fecha inicio repetición"
+            endText="Fecha fin repetición"
+            value={dateRange}
+            onChange={handleDateRangeChange}
+            renderInput={(startProps, endProps) => (
+              <>
+                <TextField {...startProps} fullWidth margin="normal" />
+                <TextField {...endProps} fullWidth margin="normal" />
+              </>
+            )}
+          />
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setIsModalOpen(false)}>Cancelar</Button>
