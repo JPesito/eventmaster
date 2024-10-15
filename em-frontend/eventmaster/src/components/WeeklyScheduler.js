@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
-import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import axios from 'axios';
 import 'moment/locale/es';
@@ -23,7 +22,6 @@ const theme = createTheme({
 });
 
 const WeeklyScheduler = ({ selectedRoomId }) => {
-  const navigate = useNavigate(); 
   const [events, setEvents] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState(null);
@@ -33,8 +31,6 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
   const [selectedProgramId, setSelectedProgramId] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [repeatEvent, setRepeatEvent] = useState(false);
-  const [dateRange, setDateRange] = useState([null, null]);
 
   useEffect(() => {
     if (!selectedRoomId) return;
@@ -68,7 +64,7 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
     setSelectedSubject({ id: event.subjectID, name: event.nameSubject });
     setIsEditMode(true);
     setIsModalOpen(true);
-};
+  };
 
   const handleDeleteEvent = async () => {
     if (!currentEvent || !currentEvent.id) return;
@@ -84,12 +80,6 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
     }
   };
 
-  const isOverlapping = (start, end, eventId = null) => {
-    return events.some(event => 
-      event.id !== eventId && (start < event.end && end > event.start)
-    );
-  };
-
   const handleSelectSlot = ({ start, end }) => {
     setCurrentEvent({ start: moment(start), end: moment(end) });
     setSelectedTeacher(null);
@@ -99,53 +89,56 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
     setIsModalOpen(true);
   };
 
-  const handleSaveEvent = async () => {
-    if (!currentEvent || !currentEvent.start || !currentEvent.end || !selectedRoomId || !selectedTeacher || !selectedProgramId || !selectedSubject) {
+  const handleSaveEvent = async (eventToSave) => {
+    if (!eventToSave || !eventToSave.start || !eventToSave.end || !selectedRoomId || !selectedTeacher || !selectedProgramId || !selectedSubject) {
       setShowErrorMessage(true);
       return;
     }
   
-    const eventToSave = {
-      id: currentEvent.id,
+    const baseEvent = {
       roomID: selectedRoomId,
       teacherID: selectedTeacher.id,
       programID: selectedProgramId,
       subjectID: selectedSubject.id,
-      start: currentEvent.start.format('YYYY-MM-DD HH:mm:ss'),
-      end: currentEvent.end.format('YYYY-MM-DD HH:mm:ss'),
+      start: eventToSave.start.format('YYYY-MM-DD HH:mm:ss'),
+      end: eventToSave.end.format('YYYY-MM-DD HH:mm:ss'),
     };
   
     try {
-      let savedEvent;
+      let savedEvents = [];
   
       if (isEditMode) {
-        const response = await axios.put(`${API_BASE_URL}/events/${currentEvent.id}`, eventToSave);
-        savedEvent = response.data;
+        const response = await axios.put(`${API_BASE_URL}/events/${eventToSave.id}`, baseEvent);
+        savedEvents.push(response.data);
       } else {
-        const response = await axios.post(`${API_BASE_URL}/events`, eventToSave);
-        savedEvent = response.data;
-      }
+        if (eventToSave.repeatEvent && eventToSave.repeatStartDate && eventToSave.repeatEndDate) {
+          const startDate = moment(eventToSave.repeatStartDate);
+          const endDate = moment(eventToSave.repeatEndDate);
+          const dayOfWeek = eventToSave.start.day();
   
-      // Si el evento se va a repetir
-      if (repeatEvent && dateRange[0] && dateRange[1]) {
-        const currentDayOfWeek = moment(currentEvent.start).day();
-        const startDate = moment(dateRange[0]);
-        const endDate = moment(dateRange[1]);
-  
-        // Itera por cada semana dentro del rango de fechas
-        let currentRepeatDate = startDate.clone().day(currentDayOfWeek);
-        while (currentRepeatDate.isBefore(endDate)) {
-          const repeatEventToSave = {
-            ...eventToSave,
-            start: currentRepeatDate.clone().hour(currentEvent.start.hour()).minute(currentEvent.start.minute()).format('YYYY-MM-DD HH:mm:ss'),
-            end: currentRepeatDate.clone().hour(currentEvent.end.hour()).minute(currentEvent.end.minute()).format('YYYY-MM-DD HH:mm:ss'),
-          };
-          await axios.post(`${API_BASE_URL}/events`, repeatEventToSave);
-          currentRepeatDate.add(1, 'week');  // Avanza una semana
+          while (startDate.isSameOrBefore(endDate)) {
+            if (startDate.day() === dayOfWeek) {
+              const eventStart = startDate.clone().hour(eventToSave.start.hour()).minute(eventToSave.start.minute());
+              const eventEnd = startDate.clone().hour(eventToSave.end.hour()).minute(eventToSave.end.minute());
+              
+              const repeatedEvent = {
+                ...baseEvent,
+                start: eventStart.format('YYYY-MM-DD HH:mm:ss'),
+                end: eventEnd.format('YYYY-MM-DD HH:mm:ss'),
+              };
+              
+              const response = await axios.post(`${API_BASE_URL}/events`, repeatedEvent);
+              savedEvents.push(response.data);
+            }
+            startDate.add(1, 'day');
+          }
+        } else {
+          const response = await axios.post(`${API_BASE_URL}/events`, baseEvent);
+          savedEvents.push(response.data);
         }
       }
   
-      setEvents((prevEvents) => [...prevEvents, savedEvent]);
+      setEvents((prevEvents) => [...prevEvents, ...savedEvents]);
       setIsModalOpen(false);
       setCurrentEvent(null);
       setShowSuccessMessage(true);
@@ -154,7 +147,6 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
       setShowErrorMessage(true);
     }
   };
-  
 
   const eventStyleGetter = () => {
     return {
@@ -209,10 +201,6 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
               handleSaveEvent={handleSaveEvent} 
               handleDeleteEvent={handleDeleteEvent}
               isEditMode={isEditMode}
-              repeatEvent={repeatEvent} 
-              setRepeatEvent={setRepeatEvent} 
-              dateRange={dateRange} 
-              setDateRange={setDateRange} 
             />
           )}
 

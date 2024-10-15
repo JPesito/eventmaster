@@ -34,7 +34,6 @@ const HomeUser = () => {
         const room = rooms.find(room => room.roomName === selectedRoomName);
         if (room) {
             setSelectedRoomId(room.id); // Guardar el idroom del salón
-            console.log('ID de la sala seleccionada:', room.id); // Debugging
         }
     };
 
