@@ -28,7 +28,7 @@
 
 .formControl {
     margin-bottom: 2rem;
-    min-width: 200px;
+    width: 200px;
 }
 
 .fullWidthBox {

@@ -1,9 +1,10 @@
 const express = require('express');
 const mysql = require('mysql2/promise'); // Para usar promesas
-const bcrypt = require('bcrypt'); // Asegúrate de tener bcrypt instalado
-const jwt = require('jsonwebtoken'); // Asegúrate de tener jsonwebtoken instalado
+const bcrypt = require('bcrypt'); 
+const jwt = require('jsonwebtoken'); 
 const cors = require('cors');
 const { format, isValid, parseISO } = require('date-fns'); // Usaremos date-fns para el formato de fechas
+require('dotenv').config();
 const app = express();
 
 // Middlewares
@@ -15,11 +16,12 @@ let db; // Declarar la variable de conexión
 // Función asíncrona para inicializar la conexión
 const initializeDbConnection = async () => {
   try {
+
     db = await mysql.createConnection({
-      host: 'localhost',
-      user: 'root',
-      password: 'FUH2024**',
-      database: 'eventmaster',
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME,
     });
     console.log('Connected to database');
   } catch (err) {
@@ -31,10 +33,10 @@ const initializeDbConnection = async () => {
 // Inicializar la conexión
 initializeDbConnection();
 
+
+
 /********  Login ********/
-
 app.post('/login', async (req, res) => {
-
   const { username, password } = req.body;
 
   try {
@@ -42,15 +44,13 @@ app.post('/login', async (req, res) => {
     const [results] = await db.query(sql, [username]);
 
     if (results.length > 0) {
-      const user = results[0]; // Usar el primer resultado
+      const user = results[0];
 
-      // Comparar contraseñas
       const isMatch = await bcrypt.compare(password, user.userPassword);
 
       if (isMatch) {
-        // Contraseña correcta
         const token = jwt.sign(
-          { id: user.id, username: user.userName },
+          { id: user.id, username: user.userName, isAdmin: user.isAdmin }, 
           'secret_key',
           { expiresIn: '1h' }
         );
@@ -62,9 +62,44 @@ app.post('/login', async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
   } catch (error) {
-    console.error('Error en el servidor:', error); // Log de error más detallado
+    console.error('Error en el servidor:', error);
     res.status(500).json({ message: 'Error en el servidor' });
   }
+});
+
+/********  Middleware para verificar token y si es admin ********/
+const authenticateJWT = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (token) {
+    jwt.verify(token, 'secret_key', (err, decoded) => {
+      if (err) {
+        return res.status(403).json({ message: 'Acceso no autorizado' });
+      }
+      req.user = decoded; // Almacenar la información del usuario
+      next();
+    });
+  } else {
+    res.status(401).json({ message: 'Token no proporcionado' });
+  }
+};
+
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.isAdmin) {
+    next();
+  } else {
+    res.status(403).json({ message: 'Solo los administradores pueden acceder a esta ruta' });
+  }
+};
+
+/********  Ruta protegida solo para admins ********/
+app.get('/admin-only', authenticateJWT, isAdmin, (req, res) => {
+  res.json({ message: 'Bienvenido, Admin' });
+});
+
+// Rutas normales protegidas por JWT
+app.get('/secure-route', authenticateJWT, (req, res) => {
+  res.json({ message: `Bienvenido, ${req.user.username}` });
 });
 
 
@@ -313,12 +348,10 @@ app.get('/programs/search', async (req, res) => {
 app.get('/subjects/search', async (req, res) => {
   const { query, programid } = req.query;
 
-  // Asegúrate de que `programid` esté presente
   if (!programid) {
       return res.status(400).json({ error: 'El ID del programa es requerido' });
   }
 
-  // Validar que el query tenga al menos dos caracteres
   if (query && query.length < 2) {
       return res.status(400).json({ error: 'El término de búsqueda debe tener al menos 2 caracteres' });
   }
@@ -327,10 +360,9 @@ app.get('/subjects/search', async (req, res) => {
   let sql = `SELECT * FROM subjects WHERE programid = ?`;
   const params = [programid];
 
-  // Si hay un término de búsqueda (`query`), añadirlo a la consulta
   if (query) {
       sql += ` AND nameSubject LIKE ?`;
-      params.push(`%${query}%`); // Agrega comodines para la búsqueda parcial
+      params.push(`%${query}%`);
   }
 
   try {

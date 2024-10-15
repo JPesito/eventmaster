@@ -1,24 +1,11 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  IconButton,
-  InputAdornment,
-  Checkbox,
-  FormControlLabel,
-  Link,
-  Paper,
-  ThemeProvider,
-  createTheme,
-  styled,
-} from '@mui/material';
+import { Box, Button, TextField, Typography, IconButton, InputAdornment, Checkbox, FormControlLabel, Link, Paper, ThemeProvider, createTheme, styled } from '@mui/material';
 import { motion } from 'framer-motion';
 import { Visibility, VisibilityOff, Fingerprint, Person, Lock } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../../config';
+import { useAuth } from '../context/AuthContext'; // Importa el hook useAuth
 
 const theme = createTheme({
   palette: {
@@ -47,63 +34,36 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   width: '400px',
 }));
 
-const AnimatedBackground = styled(Box)({
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  zIndex: -1,
-  background: 'linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab)',
-  backgroundSize: '400% 400%',
-  animation: '$gradient 15s ease infinite',
-  overflow: 'hidden',
-  '@keyframes gradient': {
-    '0%': {
-      backgroundPosition: '0% 50%',
-    },
-    '50%': {
-      backgroundPosition: '100% 50%',
-    },
-    '100%': {
-      backgroundPosition: '0% 50%',
-    },
-  },
-});
-
-const FloatingObject = styled(motion.div)(({ theme }) => ({
-  position: 'absolute',
-  width: '50px',
-  height: '50px',
-  borderRadius: '50%',
-  background: 'rgba(255, 255, 255, 0.1)',
-  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.2)',
-}));
-
 const LoginUsers = () => {
-
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate(); // Para redirigir
+  const navigate = useNavigate();
+  const { login } = useAuth(); // Obtén la función login del contexto
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     try {
-      // Llamada al backend para validar el login
       const response = await axios.post(`${API_BASE_URL}/login`, { username, password });
 
-      // Guardar token en localStorage si la respuesta es exitosa
       if (response.status === 200) {
-        localStorage.setItem('token', response.data.token);
-        navigate('/home');
+        const { token, role } = response.data;
+        
+        // Usar el método login del contexto
+        login(token, role);
+
+        // Redirigir según el rol del usuario
+        if (role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/home');
+        }
       }
     } catch (error) {
       if (error.response) {
-        // Si el servidor responde con un error
         if (error.response.status === 401) {
           setError('Contraseña incorrecta. Intenta nuevamente.');
         } else if (error.response.status === 404) {
@@ -112,7 +72,6 @@ const LoginUsers = () => {
           setError('Error en el servidor. Intenta más tarde.');
         }
       } else {
-        // Si hay un error en la petición
         setError('Error en la conexión.');
       }
     }
@@ -124,23 +83,6 @@ const LoginUsers = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <AnimatedBackground>
-        {[...Array(11)].map((_, index) => (
-          <FloatingObject
-            key={index}
-            initial={{ x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight }}
-            animate={{
-              x: [Math.random() * window.innerWidth, Math.random() * window.innerWidth],
-              y: [Math.random() * window.innerHeight, Math.random() * window.innerHeight],
-            }}
-            transition={{
-              duration: Math.random() * 10 + 10,
-              repeat: Infinity,
-              repeatType: 'reverse',
-            }}
-          />
-        ))}
-      </AnimatedBackground>
       <Box
         sx={{
           display: 'flex',

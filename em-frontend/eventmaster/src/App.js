@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import { AuthProvider } from './components/context/AuthContext';
 import WeeklyScheduler from './components/WeeklyScheduler';
 import Home from './components/Home';
 import Navbar from './components/Navbar';
@@ -8,15 +9,19 @@ import SuccessMessage from './components/SuccessMessage';
 import HomeReports from './components/reports/HomeReports';
 import HomeUser from './components/users/HomeUser'
 import LoginUsers from './components/login/LoginUsers';
+import HomeAdmin from './components/users/HomeAdmin';
+import ProtectedAdminRoute from './components/login/ProtectedAdminRoute';
 import ProtectedRoute from './components/login/ProtectedRoute';
 import './styles.css'; 
 
 const App = () => {
   return (
-    <Router>
-      <Navbar />
-      <AnimatedRoutes />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Navbar />
+        <AnimatedRoutes />
+      </Router>
+    </AuthProvider>
   );
 };
 
@@ -35,6 +40,7 @@ const AnimatedRoutes = () => {
           <Route path="/reports" element={<HomeReports />} />
           <Route path="/about" element={<About />} />
           <Route path="/success" element={<SuccessMessage />} />
+          <Route path="/admin" element={<ProtectedAdminRoute element={<HomeAdmin />} />} />
         </Routes>
       </CSSTransition>
     </TransitionGroup>
