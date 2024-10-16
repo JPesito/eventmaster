@@ -86,7 +86,7 @@ const CardsEventsList = ({ events = [] }) => {
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/events/${selectedEvent.id}`, {
+      const response = await fetch(`${API_BASE_URL}/check/${selectedEvent.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

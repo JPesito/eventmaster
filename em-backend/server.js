@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const mysql = require('mysql2/promise'); // Para usar promesas
 const bcrypt = require('bcrypt'); 
 const jwt = require('jsonwebtoken'); 
@@ -8,7 +9,11 @@ require('dotenv').config();
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Asegúrese de que esto coincida con la URL de su frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 let db; // Declarar la variable de conexión
@@ -32,6 +37,19 @@ const initializeDbConnection = async () => {
 
 // Inicializar la conexión
 initializeDbConnection();
+
+
+
+// Nuevo endpoint para probar la conexión
+app.get('/api/test-connection', async (req, res) => {
+  try {
+    await db.query('SELECT 1');
+    res.json({ success: true, message: 'Database connection successful' });
+  } catch (error) {
+    console.error('Database connection test failed:', error);
+    res.status(500).json({ success: false, message: 'Database connection failed', error: error.message });
+  }
+});
 
 
 
@@ -275,7 +293,7 @@ app.post('/events', async (req, res) => {
 
 
 // Registrar uso de sala
-app.put('/events/:id', async (req, res) => {
+app.put('/check/:id', async (req, res) => {
   const { id } = req.params;
   const { numStudents, isUsed } = req.body;
 
@@ -379,6 +397,16 @@ app.get('/subjects/search', async (req, res) => {
 
 
 
+// Middleware para servir archivos estáticos de la carpeta build del frontend
+app.use(express.static(path.join(__dirname, '../em-frontend/build')));
+
+// Enviar todos los requests a index.html
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../em-frontend/build', 'index.html'));
+});
+
 // Puerto
 const PORT = 5000;
-app.listen(PORT, () => console.log('Server running on port', PORT));
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
+});
