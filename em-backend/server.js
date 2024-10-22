@@ -8,12 +8,23 @@ const { format, isValid, parseISO } = require('date-fns'); // Usaremos date-fns 
 require('dotenv').config();
 const app = express();
 
+const allowedOrigins = [ process.env.REACT_APP_API_BASE_URL, 'http://10.0.0.163:3002', 'http://10.0.0.163:3000', 'http://localhost:3002' ]
+
 // Middlewares
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Asegúrese de que esto coincida con la URL de su frontend
+  origin: function (origin, callback) {
+    // Permitir solicitudes sin 'origin' como las de herramientas como Postman
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy does not allow access from this origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  credentials: true,
 }));
+
 app.use(express.json());
 
 let db; // Declarar la variable de conexión
@@ -22,11 +33,14 @@ let db; // Declarar la variable de conexión
 const initializeDbConnection = async () => {
   try {
 
-    db = await mysql.createConnection({
+    db = await mysql.createPool({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
     });
     console.log('Connected to database');
   } catch (err) {
@@ -406,7 +420,7 @@ app.get('*', (req, res) => {
 });
 
 // Puerto
-const PORT = 5000;
+const PORT = process.env.PORT;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
 });
