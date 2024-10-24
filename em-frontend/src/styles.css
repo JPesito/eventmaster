@@ -150,39 +150,6 @@
   }
 
 
-
-  /* TeacherList */
-
-  .results-list {
-    list-style: none;
-    padding: 0;
-    margin: 8px 0 0 0;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #fff;
-    max-height: 200px;
-    overflow-y: auto;
-    position: absolute;
-    width: 20%;
-    z-index: 1;
-    border-color: #f2e8c4;
-  }
-  
-  .result-item {
-    padding: 8px;
-    cursor: pointer;
-    background-color: #f2e8c4;
-    border-bottom: 1px solid #eee;
-    border-color: #f2e8c4;
-    border-radius: 8px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  
-  .result-item:hover {
-    background-color: #616668;
-    color: #fff
-  }
-
   .card-event-subject {
     font-size: 1.5rem;
     font-family: 'Josefin Sans', sans-serif;

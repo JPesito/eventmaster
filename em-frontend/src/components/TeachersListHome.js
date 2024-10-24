@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import API_BASE_URL from '../config';
 import { TextField, Fade } from '@mui/material';
-import '../styles.css';
+import './home.css';
 
 const TeachersList = ({ onSubmit }) => {
   const [query, setQuery] = useState('');
@@ -47,13 +47,13 @@ const TeachersList = ({ onSubmit }) => {
         onChange={handleChange}
         InputProps={{
           sx: {
-            fontSize: '1.5rem',
+            fontSize: '2rem',
             fontFamily: 'Josefin Sans, sans-serif'
           }
         }}
         InputLabelProps={{
           sx: {
-            fontSize: '1.2rem',
+            fontSize: '1.8rem',
             fontFamily: 'Josefin Sans, sans-serif' 
           }
         }}

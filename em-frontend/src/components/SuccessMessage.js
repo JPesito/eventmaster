@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Grid, Typography, Button } from '@mui/material';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import '../styles.css';
-import successAnimation from '../animations/okey.lottie'; // Ajusta la ruta si es necesario
+import successAnimation from '../animations/okey.lottie';
 
 const fontFamily = {
   fontFamily: 'Josefin Sans, sans-serif',

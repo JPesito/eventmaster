@@ -4,6 +4,8 @@ import { Card, CardContent, Typography, Grid, Box, Button, Dialog, DialogTitle, 
 import CheckIcon from '@mui/icons-material/Check';
 import ToolsList from './ToolsList';
 import { useNavigate } from 'react-router-dom';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import successAnimation from '../animations/notFound.lottie';
 
 {/* Formateador de Fechas */}
 const formatDate = (datetime) => {
@@ -40,16 +42,35 @@ const CardsEventsList = ({ events = [] }) => {
   if (!events || events.length === 0) {
     return (
       <Grid container>
-        <Grid item xs={12}>
+        <Grid item xs={12} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', height: '100%'}}>
+          <DotLottieReact
+            src={successAnimation}
+            loop={true}
+            autoplay
+            style={{ height: '200px', width: '200px', filter: 'brightness(0.5) saturate(2) hue-rotate(20deg)' }}
+          />
+          
           <Typography variant="h6" sx={{ ...commonTypographyStyles, color: 'black' }}>
-            No hay eventos disponibles para este profesor.
+            Veo que no hay eventos disponibles para ti en este momento.
+          </Typography>
+          <Typography variant="h5" sx={{
+            ...commonTypographyStyles,
+            fontWeight: 'bold', // Negrita
+            fontSize: '1.5rem', // Tamaño aumentado
+            color: '#454084', // Color resaltado
+            textShadow: '1px 1px 2px rgba(0,0,0,0.1)', // Sombra de texto
+          }}>
+            No te preocupes,
+          </Typography>
+          <Typography variant="h6" sx={{ ...commonTypographyStyles, color: 'black' }}>
+            .
           </Typography>
           <Button 
             variant="contained" 
             onClick={() => navigate('/form-reservation')} // Cambia la ruta según tu configuración
             sx={{ marginTop: 2 }}
           >
-            Reservas Sala
+            Reservar Sala
           </Button>
         </Grid>
       </Grid>
@@ -109,12 +130,12 @@ const CardsEventsList = ({ events = [] }) => {
 
   return (
     <>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} sx={{marginTop: '3%'}}>
         {events.map((event, index) => (
-          <Grid item xs={12} key={index} sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Grid item xs={12} key={index} sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center'  }}>
             <Card
               sx={{
-                background: "#296878",
+                background: "#0052A1",
                 borderRadius: '8px',
                 overflow: 'hidden',
                 width: '100%',
@@ -129,6 +150,7 @@ const CardsEventsList = ({ events = [] }) => {
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
+                  width: '85%'
                 }}
               >
                 <Grid container spacing={2} sx={{ alignItems: 'center' }}>
@@ -148,7 +170,7 @@ const CardsEventsList = ({ events = [] }) => {
                     <Typography variant="h6" sx={{ ...commonTypographyStyles, fontSize: '1.5rem', textAlign: 'center' }}>
                       Salón
                     </Typography>
-                    <Box sx={{ ...boxStyles, backgroundColor: '#98d9b6', borderColor: '#98d9b6' }}>
+                    <Box sx={{ ...boxStyles, backgroundColor: '#99C9E5', borderColor: '#99C9E5' }}>
                       <Typography sx={{ ...commonTypographyStyles, fontSize: '2rem', color: '#000' }}>
                         {event.roomName}
                       </Typography>
@@ -166,7 +188,7 @@ const CardsEventsList = ({ events = [] }) => {
                   '&:hover': {
                     backgroundColor: '#2ea88a',
                   },
-                  width: '20%',
+                  width: '15%',
                   height: 'auto',
                   borderRadius: '0',
                   fontSize: '1.5rem',
@@ -180,14 +202,36 @@ const CardsEventsList = ({ events = [] }) => {
       </Grid>
 
       {/* Modal para detalles de la clase */}
-      <Dialog open={Boolean(selectedEvent)} onClose={handleCloseModal} sx={{
-        '& .MuiDialog-paper': {
-          width: '600px', 
-          height: '500px', 
-        },
-      }}>
-        <DialogTitle sx={{ ...commonTypographyStyles, fontSize: '2rem', color: '#000', marginTop:'2%' }}>Detalles de la clase</DialogTitle>
-        <DialogContent>
+      <Dialog 
+        open={Boolean(selectedEvent)} 
+        onClose={handleCloseModal} 
+        sx={{
+          '& .MuiDialog-paper': {
+            width: '600px',
+            height: '500px',
+            overflow: 'hidden', // Esto evita el scroll
+            display: 'flex',
+            flexDirection: 'column',
+          },
+        }}
+      >
+        <DialogTitle sx={{ 
+          ...commonTypographyStyles, 
+          fontSize: '2rem', 
+          color: '#000', 
+          marginTop: '2%',
+          padding: '16px 24px', // Ajusta el padding para dar más espacio al contenido
+        }}>
+          Detalles de la clase
+        </DialogTitle>
+        <DialogContent sx={{ 
+          flex: 1, 
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '0 24px 16px', // Ajusta el padding para dar más espacio al contenido
+        }}>
           <TextField
             autoFocus
             margin="dense"
@@ -201,7 +245,6 @@ const CardsEventsList = ({ events = [] }) => {
               style: {
                 fontFamily: 'Josefin Sans, sans-serif',
                 fontSize: '1.2rem',
-                marginBottom: '8%'
               },
             }}
             InputLabelProps={{
@@ -210,17 +253,20 @@ const CardsEventsList = ({ events = [] }) => {
                 fontSize: '1.2rem',
               },
             }}
+            sx={{ marginBottom: '24px' }} // Ajusta el margen inferior
           />
-          <ToolsList tools={tools} setTools={setTools} /> 
+          <Box sx={{ flex: 1, overflow: 'auto' }}> {/* Permite scroll solo en la lista de herramientas si es necesario */}
+            <ToolsList tools={tools} setTools={setTools} />
+          </Box>
           {errorMessage && (
-            <Typography color="error">{errorMessage}</Typography> 
+            <Typography color="error" sx={{ marginTop: '16px' }}>{errorMessage}</Typography>
           )}
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ padding: '16px 24px' }}> {/* Ajusta el padding de las acciones */}
           <Button onClick={handleCloseModal}>Cancelar</Button>
           <Button 
             onClick={handleSubmitModal}
-            disabled={!studentCount || isNaN(studentCount) || studentCount <= 0 || tools.length === 0} // Deshabilitar si no hay un número válido
+            disabled={!studentCount || isNaN(studentCount) || studentCount <= 0 || tools.length === 0}
           >
             Enviar
           </Button>
