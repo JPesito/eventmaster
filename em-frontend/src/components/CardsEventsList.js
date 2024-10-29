@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import successAnimation from '../animations/notFound.lottie';
 
-{/* Formateador de Fechas */}
 const formatDate = (datetime) => {
   const parsedDate = Date.parse(datetime);
   if (isNaN(parsedDate)) {
@@ -49,25 +48,36 @@ const CardsEventsList = ({ events = [] }) => {
             autoplay
             style={{ height: '200px', width: '200px', filter: 'brightness(0.5) saturate(2) hue-rotate(20deg)' }}
           />
-          
           <Typography variant="h6" sx={{ ...commonTypographyStyles, color: 'black' }}>
             Veo que no hay eventos disponibles para ti en este momento.
           </Typography>
-          <Typography variant="h5" sx={{
-            ...commonTypographyStyles,
-            fontWeight: 'bold', // Negrita
-            fontSize: '1.5rem', // Tamaño aumentado
-            color: '#454084', // Color resaltado
-            textShadow: '1px 1px 2px rgba(0,0,0,0.1)', // Sombra de texto
-          }}>
-            No te preocupes,
-          </Typography>
-          <Typography variant="h6" sx={{ ...commonTypographyStyles, color: 'black' }}>
-            .
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography
+              variant="h6"
+              sx={{
+                ...commonTypographyStyles,
+                fontWeight: 'bold',
+                fontSize: '1.8rem',
+                color: '#454084',
+                textShadow: '1px 1px 2px rgba(0,0,0,0.1)',
+              }}
+            >
+              No te preocupes. 
+            </Typography>
+            <Typography
+              variant="h5"
+              sx={{
+                ...commonTypographyStyles,
+                color: 'black',
+                paddingLeft: '8px'
+              }}
+            >
+             Aún puedes reservar una de nuestras salas. 
+            </Typography>
+          </Box>
           <Button 
             variant="contained" 
-            onClick={() => navigate('/form-reservation')} // Cambia la ruta según tu configuración
+            onClick={() => navigate('/teacher-scheduler')}
             sx={{ marginTop: 2 }}
           >
             Reservar Sala
@@ -77,7 +87,6 @@ const CardsEventsList = ({ events = [] }) => {
     );
   }
 
-  // Resultado Exitoso
   const handleNavigate = () => {
     navigate('/success');
   };
@@ -104,6 +113,8 @@ const CardsEventsList = ({ events = [] }) => {
     const updatedEvent = {
       numStudents: studentCount,
       isUsed: true,
+      eventId: selectedEvent.id,
+      tools: tools.map(tool => tool.id)  // Extrae solo los ids de las herramientas
     };
 
     try {
@@ -117,7 +128,7 @@ const CardsEventsList = ({ events = [] }) => {
 
       if (response.ok) {
         handleNavigate();
-        handleCloseModal(); // Cerrar el modal solo si la actualización fue exitosa
+        handleCloseModal();
       } else {
         const responseData = await response.json();
         setErrorMessage(responseData.message || 'Error al actualizar el evento');
@@ -201,7 +212,6 @@ const CardsEventsList = ({ events = [] }) => {
         ))}
       </Grid>
 
-      {/* Modal para detalles de la clase */}
       <Dialog 
         open={Boolean(selectedEvent)} 
         onClose={handleCloseModal} 
@@ -209,29 +219,16 @@ const CardsEventsList = ({ events = [] }) => {
           '& .MuiDialog-paper': {
             width: '600px',
             height: '500px',
-            overflow: 'hidden', // Esto evita el scroll
+            overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
           },
         }}
       >
-        <DialogTitle sx={{ 
-          ...commonTypographyStyles, 
-          fontSize: '2rem', 
-          color: '#000', 
-          marginTop: '2%',
-          padding: '16px 24px', // Ajusta el padding para dar más espacio al contenido
-        }}>
+        <DialogTitle sx={{ ...commonTypographyStyles, fontSize: '2rem', color: '#000', marginTop: '2%', padding: '16px 24px' }}>
           Detalles de la clase
         </DialogTitle>
-        <DialogContent sx={{ 
-          flex: 1, 
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: '0 24px 16px', // Ajusta el padding para dar más espacio al contenido
-        }}>
+        <DialogContent sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '0 24px 16px' }}>
           <TextField
             autoFocus
             margin="dense"
@@ -247,27 +244,19 @@ const CardsEventsList = ({ events = [] }) => {
                 fontSize: '1.2rem',
               },
             }}
-            InputLabelProps={{
-              style: {
-                fontFamily: 'Josefin Sans, sans-serif',
-                fontSize: '1.2rem',
-              },
-            }}
-            sx={{ marginBottom: '24px' }} // Ajusta el margen inferior
           />
-          <Box sx={{ flex: 1, overflow: 'auto' }}> {/* Permite scroll solo en la lista de herramientas si es necesario */}
-            <ToolsList tools={tools} setTools={setTools} />
-          </Box>
+          <ToolsList selectedTools={tools} setSelectedTools={setTools} />
           {errorMessage && (
-            <Typography color="error" sx={{ marginTop: '16px' }}>{errorMessage}</Typography>
+            <Typography color="error" variant="body1" sx={{ marginTop: 2 }}>
+              {errorMessage}
+            </Typography>
           )}
         </DialogContent>
-        <DialogActions sx={{ padding: '16px 24px' }}> {/* Ajusta el padding de las acciones */}
-          <Button onClick={handleCloseModal}>Cancelar</Button>
-          <Button 
-            onClick={handleSubmitModal}
-            disabled={!studentCount || isNaN(studentCount) || studentCount <= 0 || tools.length === 0}
-          >
+        <DialogActions sx={{ padding: '16px 24px' }}>
+          <Button onClick={handleCloseModal} sx={{ ...commonTypographyStyles, color: '#000', marginRight: 'auto' }}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSubmitModal} sx={{ ...commonTypographyStyles, color: '#000', backgroundColor: '#3ec9a7' }}>
             Enviar
           </Button>
         </DialogActions>

@@ -1,72 +1,17 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { 
-  TextField, 
-  Button, 
+import { Button, 
   Box, 
   Typography, 
-  Paper,
-  Container,
-  ThemeProvider,
-  createTheme,
-  styled,
   CircularProgress
 } from '@mui/material';
-import { motion } from 'framer-motion';
+import { ReactComponent as Logo } from '../assets/Logo_UH.svg';
 import TeachersList from './TeachersList'
-import RoomsList from './RoomsList';
+import ToolsList from './ToolsList';
+
 import ProgramsList from './ProgramsList';
 import SubjectsList from './SubjectsList';
 import API_BASE_URL from '../config';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#3f51b5',
-    },
-    secondary: {
-      main: '#f50057',
-    },
-    background: {
-      default: '#f0f4f8',
-    },
-  },
-  typography: {
-    fontFamily: '"Poppins", "Helvetica", "Arial", sans-serif',
-  },
-});
-
-const AnimatedBackground = styled(Box)(({ theme }) => ({
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  zIndex: -1,
-  background: 'linear-gradient(45deg, #3f51b5 30%, #f50057 90%)',
-  backgroundSize: '400% 400%',
-  animation: 'gradient 15s ease infinite',
-  '@keyframes gradient': {
-    '0%': {
-      backgroundPosition: '0% 50%',
-    },
-    '50%': {
-      backgroundPosition: '100% 50%',
-    },
-    '100%': {
-      backgroundPosition: '0% 50%',
-    },
-  },
-}));
-
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
-  marginTop: theme.spacing(4),
-  borderRadius: '15px',
-  boxShadow: '0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23)',
-  background: 'rgba(255, 255, 255, 0.9)',
-  backdropFilter: 'blur(10px)',
-}));
 
 const FormReservation = () => {
   const [formData, setFormData] = useState({
@@ -117,29 +62,45 @@ const FormReservation = () => {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <AnimatedBackground />
-      <Container maxWidth="sm">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <StyledPaper elevation={3}>
+    <Box sx={{ position: 'relative', overflow: 'hidden', height: '100vh', width: '100vw', backgroundColor: 'var(--cold-color)' }}>
+      <div className="animation-container" />
+
+      <Logo 
+        className="company-logo" 
+        width="100" 
+        height="100" 
+        style={{
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          zIndex: 2,
+        }}
+      />
+
+      <Box 
+        className="container" 
+        sx={{ 
+          background: 'rgba(255, 255, 255, 0.9)', 
+          backdropFilter: 'blur(10px)',
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          width: '65%',
+          height: '100%',
+          margin: '0 auto',
+          boxShadow: '0 8px 32px 0 rgba(0, 82, 161, 0.37)',
+          border: '1px solid rgba(0, 159, 227, 0.18)',
+          position: 'relative',
+          zIndex: 1,
+          overflow: 'hidden'
+        }}
+      >
             <Typography variant="h4" component="h1" gutterBottom align="center" color="primary">
               Reserva de Sala
             </Typography>
             <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
               <TeachersList />
-              <TextField
-                fullWidth
-                label="Tecnologías"
-                name="tecnologias"
-                value={formData.tecnologias}
-                onChange={handleInputChange}
-                margin="normal"
-                variant="outlined"
-              />
               <Box sx={{ my: 2 }}>
                 <Typography variant="subtitle1" gutterBottom color="primary">
                   Programa
@@ -156,7 +117,6 @@ const FormReservation = () => {
                 <Typography variant="subtitle1" gutterBottom color="primary">
                   Salas disponibles
                 </Typography>
-                <RoomsList onSelectRoom={handleRoomSelection} />
               </Box>
               <Button 
                 type="submit" 
@@ -169,10 +129,9 @@ const FormReservation = () => {
                 {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Registrar'}
               </Button>
             </Box>
-          </StyledPaper>
-        </motion.div>
-      </Container>
-    </ThemeProvider>
+        </Box>
+      </Box>
+
   );
 };
 

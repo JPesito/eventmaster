@@ -13,6 +13,7 @@ import HomeAdmin from './components/users/HomeAdmin';
 import ProtectedAdminRoute from './components/login/ProtectedAdminRoute';
 import ProtectedRoute from './components/login/ProtectedRoute';
 import './styles.css'; 
+import TeacherScheduler from './components/calendar/TeacherScheduler';
 
 const App = () => {
   return (
@@ -40,6 +41,7 @@ const AnimatedRoutes = () => {
           <Route path="/reports" element={<HomeReports />} />
           <Route path="/about" element={<About />} />
           <Route path="/success" element={<SuccessMessage />} />
+          <Route path="/teacher-scheduler" element={<TeacherScheduler /> } />
           <Route path="/admin" element={<ProtectedAdminRoute element={<HomeAdmin />} />} />
         </Routes>
       </CSSTransition>

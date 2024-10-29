@@ -230,6 +230,22 @@ app.get('/eventsroom', async (req, res) => {
 });
 
 
+app.post('events/:eventId/tools', async (req, res) => {
+  const { eventId } = req.params;
+  const { tools } = req.body; // Lista de toolIds
+  try {
+    // Inserta cada toolId con el eventId en la tabla eventstools
+    const values = tools.map(toolId => [eventId, toolId]);
+    const query = 'INSERT INTO eventstools (eventId, toolId) VALUES ?';
+
+    await db.query(query, [values]);
+
+    res.status(200).json({ message: 'Tools added successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error saving tools', error });
+  }
+});
+
 
 
 //Eliminar eventos
