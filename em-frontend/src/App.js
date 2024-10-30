@@ -11,9 +11,9 @@ import HomeUser from './components/users/HomeUser'
 import LoginUsers from './components/login/LoginUsers';
 import HomeAdmin from './components/users/HomeAdmin';
 import ProtectedAdminRoute from './components/login/ProtectedAdminRoute';
-import ProtectedRoute from './components/login/ProtectedRoute';
+//import ProtectedRoute from './components/login/ProtectedRoute';
 import './styles.css'; 
-import TeacherScheduler from './components/calendar/TeacherScheduler';
+import HomeTeacherScheduler from './components/users/HomeTeacherScheduler';
 
 const App = () => {
   return (
@@ -41,7 +41,7 @@ const AnimatedRoutes = () => {
           <Route path="/reports" element={<HomeReports />} />
           <Route path="/about" element={<About />} />
           <Route path="/success" element={<SuccessMessage />} />
-          <Route path="/teacher-scheduler" element={<TeacherScheduler /> } />
+          <Route path="/teacher-scheduler" element={<HomeTeacherScheduler /> } />
           <Route path="/admin" element={<ProtectedAdminRoute element={<HomeAdmin />} />} />
         </Routes>
       </CSSTransition>

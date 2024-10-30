@@ -319,6 +319,32 @@ app.post('/events', async (req, res) => {
   }
 });
 
+{/* POST - Events UnReserved */}
+
+app.post('/events-unreserved', async (req, res) => {
+  const { roomID, teacherID, programID, subjectID, start, end } = req.body;
+
+
+  const startDateMySQL = format(new Date(start), 'yyyy-MM-dd HH:mm:ss');
+  const endDateMySQL = format(new Date(end), 'yyyy-MM-dd HH:mm:ss');
+  
+  const startDate = parseISO(start);
+  const endDate = parseISO(end);
+  if (!isValid(startDate) || !isValid(endDate)) {
+    return res.status(400).json({ error: 'Fechas no válidas' });
+  }
+
+  try {
+    const [results] = await db.query(
+      'INSERT INTO events (roomID, teacherID, programID, subjectID, startTime, endTime, academicPeriodID, numStudents, isUsed, isUnreserved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [roomID, teacherID, programID, subjectID, startDateMySQL, endDateMySQL, 1, 0, false, true]
+    );
+    res.json({ id: results.insertId });
+  } catch (err) {
+    console.error('Error creating event:', err);
+    res.status(500).json({ message: 'Error creating event' });
+  }
+});
 
 
 

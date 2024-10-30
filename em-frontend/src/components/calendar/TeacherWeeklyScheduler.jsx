@@ -5,14 +5,14 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import axios from 'axios';
 import 'moment/locale/es';
-import API_BASE_URL from '../config';
+import API_BASE_URL from '../../config';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import EventDialog from './calendar/EventDialog';
-import EventSnackbar from './calendar/EventSnackbar';
+import TeacherEventDialog from './TeacherEventDialog';
+import EventSnackbar from './EventSnackbar';
 import { useMediaQuery } from '@mui/material';
 
 moment.locale('es');
@@ -25,7 +25,7 @@ const theme = createTheme({
   },
 });
 
-const WeeklyScheduler = ({ selectedRoomId }) => {
+const TeacherWeeklyScheduler = ({ selectedRoomId }) => {
   const [events, setEvents] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
@@ -35,7 +35,6 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
-  const [isEditMode, setIsEditMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -74,7 +73,6 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
     setSelectedTeacher({ id: event.teacherID, name: event.teacherName });
     setSelectedProgramId(event.programID);
     setSelectedSubject({ id: event.subjectID, name: event.nameSubject });
-    setIsEditMode(true);
     setIsAlertOpen(true);
   };
 
@@ -87,21 +85,6 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
       setSelectedTeacher(null);
       setSelectedProgramId(null);
       setSelectedSubject(null);
-      setIsEditMode(false);
-    }
-  };
-
-  const handleDeleteEvent = async () => {
-    if (!currentEvent || !currentEvent.id) return;
-  
-    try {
-      await axios.delete(`${API_BASE_URL}/events/${currentEvent.id}`);
-      setEvents((prevEvents) => prevEvents.filter(event => event.id !== currentEvent.id));
-      setIsModalOpen(false);
-      setShowSuccessMessage(true);
-    } catch (error) {
-      console.error('Error al eliminar el evento:', error);
-      setShowErrorMessage(true);
     }
   };
 
@@ -110,7 +93,6 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
     setSelectedTeacher(null);
     setSelectedProgramId(null);
     setSelectedSubject(null);
-    setIsEditMode(false);
     setIsModalOpen(true);
   };
 
@@ -132,37 +114,32 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
     try {
       let savedEvents = [];
   
-      if (isEditMode) {
-        const response = await axios.put(`${API_BASE_URL}/events/${eventToSave.id}`, baseEvent);
-        savedEvents.push(response.data);
-      } else {
-        if (eventToSave.repeatEvent && eventToSave.repeatStartDate && eventToSave.repeatEndDate) {
-          const startDate = moment(eventToSave.repeatStartDate);
-          const endDate = moment(eventToSave.repeatEndDate);
-          const dayOfWeek = eventToSave.start.day();
-  
-          while (startDate.isSameOrBefore(endDate)) {
-            if (startDate.day() === dayOfWeek) {
-              const eventStart = startDate.clone().hour(eventToSave.start.hour()).minute(eventToSave.start.minute());
-              const eventEnd = startDate.clone().hour(eventToSave.end.hour()).minute(eventToSave.end.minute());
-              
-              const repeatedEvent = {
-                ...baseEvent,
-                start: eventStart.format('YYYY-MM-DD HH:mm:ss'),
-                end: eventEnd.format('YYYY-MM-DD HH:mm:ss'),
-              };
-              
-              const response = await axios.post(`${API_BASE_URL}/events`, repeatedEvent);
-              savedEvents.push(response.data);
-            }
-            startDate.add(1, 'day');
+      if (eventToSave.repeatEvent && eventToSave.repeatStartDate && eventToSave.repeatEndDate) {
+        const startDate = moment(eventToSave.repeatStartDate);
+        const endDate = moment(eventToSave.repeatEndDate);
+        const dayOfWeek = eventToSave.start.day();
+
+        while (startDate.isSameOrBefore(endDate)) {
+          if (startDate.day() === dayOfWeek) {
+            const eventStart = startDate.clone().hour(eventToSave.start.hour()).minute(eventToSave.start.minute());
+            const eventEnd = startDate.clone().hour(eventToSave.end.hour()).minute(eventToSave.end.minute());
+            
+            const repeatedEvent = {
+              ...baseEvent,
+              start: eventStart.format('YYYY-MM-DD HH:mm:ss'),
+              end: eventEnd.format('YYYY-MM-DD HH:mm:ss'),
+            };
+            
+            const response = await axios.post(`${API_BASE_URL}/events`, repeatedEvent);
+            savedEvents.push(response.data);
           }
-        } else {
-          const response = await axios.post(`${API_BASE_URL}/events`, baseEvent);
-          savedEvents.push(response.data);
+          startDate.add(1, 'day');
         }
+      } else {
+        const response = await axios.post(`${API_BASE_URL}/events-unreserved`, baseEvent);
+        savedEvents.push(response.data);
       }
-  
+
       await fetchEvents();
       setIsModalOpen(false);
       setCurrentEvent(null);
@@ -261,10 +238,11 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
             aria-labelledby="alert-dialog-title"
             aria-describedby="alert-dialog-description"
           >
-            <DialogTitle id="alert-dialog-title">{"Confirmar modificación"}</DialogTitle>
+            <DialogTitle id="alert-dialog-title">{"Responsabilidad de Uso de Salón Reservado"}</DialogTitle>
             <DialogContent>
               <DialogContentText id="alert-dialog-description">
-                ¿Está seguro de que desea modificar este evento?
+                Como profesor de nuestra institución 
+                ¿Está seguro de que desea usar el salón reservado de este evento?
               </DialogContentText>
             </DialogContent>
             <DialogActions>
@@ -278,7 +256,7 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
           </Dialog>
 
           {currentEvent && (
-            <EventDialog 
+            <TeacherEventDialog
               isModalOpen={isModalOpen} 
               setIsModalOpen={setIsModalOpen} 
               currentEvent={currentEvent} 
@@ -290,8 +268,6 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
               selectedSubject={selectedSubject} 
               setSelectedSubject={setSelectedSubject} 
               handleSaveEvent={handleSaveEvent} 
-              handleDeleteEvent={handleDeleteEvent}
-              isEditMode={isEditMode}
             />
           )}
 
@@ -307,4 +283,4 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
   );
 };
 
-export default WeeklyScheduler;
+export default TeacherWeeklyScheduler;
