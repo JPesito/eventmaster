@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { TextField, Fade } from '@mui/material';
 import API_BASE_URL from '../config';
+import '../styles.css';
 
 const SubjectsList = ({ onSubmit, programId }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
+  const [fadeIn, setFadeIn] = useState(false);
 
   const handleChange = async (e) => {
     const value = e.target.value;
@@ -18,44 +21,67 @@ const SubjectsList = ({ onSubmit, programId }) => {
         const data = await response.json();
         setResults(data);
       } catch (error) {
-        console.error('Error fetching subjects:', error); // Muestra el error en consola
+        console.error('Error fetching subjects:', error);
         setResults([]);
       }
     } else {
-      setResults([]); // Limpia los resultados si no se cumplen las condiciones
+      setResults([]);
     }
   };
 
-  const handleSelect = (subject) => { 
-    setQuery(subject.nameSubject); // Mostrar la asignatura seleccionada en el input
-    setResults([]); // Ocultar resultados después de la selección
-    onSubmit(subject); // Pasar la asignatura seleccionada al componente padre
+  const handleSelect = (subject) => {
+    setQuery(subject.nameSubject);
+    setResults([]);
+    onSubmit(subject);
   };
 
-  // Limpiar la búsqueda si cambia el programId
   useEffect(() => {
-    setQuery(''); // Limpiar el campo de búsqueda cuando cambia el programa
-    setResults([]); // Limpiar los resultados
+    setQuery('');
+    setResults([]);
   }, [programId]);
+
+  useEffect(() => {
+    setFadeIn(false);
+    const timeout = setTimeout(() => {
+      setFadeIn(true);
+    }, 50);
+    return () => clearTimeout(timeout);
+  }, [results]);
 
   return (
     <div>
-      <input
-        type="text"
+      <TextField
+        id="subject-search"
+        label="Buscar asignatura..."
+        variant="standard"
         value={query}
         onChange={handleChange}
-        placeholder="Buscar asignatura..."
-        disabled={!programId} 
+        disabled={!programId}
+        fullWidth
+        margin="normal"
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '8px',
+          },
+        }}
       />
-      {results.length > 0 && (
-        <ul>
-          {results.map(subject => ( 
-            <li key={subject.id} onClick={() => handleSelect(subject)}>
+
+      <Fade in={fadeIn && results.length > 0} timeout={800}>
+        <ul className="results-list" role="listbox">
+          {results.map(subject => (
+            <li 
+              key={subject.id} 
+              onClick={() => handleSelect(subject)} 
+              className="result-item"
+              role="option"
+              tabIndex={0}
+              onKeyPress={(e) => e.key === 'Enter' && handleSelect(subject)}
+            >
               {subject.nameSubject}
             </li>
           ))}
         </ul>
-      )}
+      </Fade>
     </div>
   );
 };

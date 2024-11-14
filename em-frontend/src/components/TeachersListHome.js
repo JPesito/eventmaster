@@ -64,6 +64,8 @@ const TeachersList = ({ onSubmit }) => {
         }}
       />
 
+      {/*Asigacion de valor por un solo dato*/}
+
       <Fade in={fadeIn && results.length > 0} timeout={800}>
         <ul className="results-list">
           {results.map(teacher => (

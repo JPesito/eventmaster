@@ -151,7 +151,9 @@ const TeacherWeeklyScheduler = ({ selectedRoomId }) => {
   };
 
   const colorMap = useMemo(() => {
-    const colors = ['#0052A1', '#FFA500', '#008000', '#800080', '#FF4500', '#4B0082', '#008080'];
+    const colors = ['#003a73', '#cc8400', '#006600', '#5a005a', '#cc3700', '#3a005e', '#006666', '#334455',
+      '#222222', '#663399', '#2a2b2e', '#444444', '#2d572c', '#4e1e00', '#5b595c', '#333333'
+    ];
     const map = new Map();
     let colorIndex = 0;
 
@@ -214,7 +216,7 @@ const TeacherWeeklyScheduler = ({ selectedRoomId }) => {
                 month: "Mes",
                 week: "Semana",
                 day: "Día",
-                today: "",
+                today: "Hoy",
                 noEventsInRange: "No hay eventos en este rango",
               }}
               formats={{

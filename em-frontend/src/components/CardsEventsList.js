@@ -36,7 +36,12 @@ const CardsEventsList = ({ events = [] }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [tools, setTools] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [teacherId, setteacherId] = useState(null);
   const navigate = useNavigate();
+
+  const handleNavigateToHistory = () => {
+    navigate('/event-history/${teacherId}');
+  };
 
   if (!events || events.length === 0) {
     return (
@@ -72,7 +77,7 @@ const CardsEventsList = ({ events = [] }) => {
                 paddingLeft: '8px'
               }}
             >
-             Aún puedes reservar una de nuestras salas. 
+              Aún puedes reservar una de nuestras salas. 
             </Typography>
           </Box>
           <Button 
@@ -100,13 +105,21 @@ const CardsEventsList = ({ events = [] }) => {
     setSelectedEvent(null);
     setStudentCount('');
     setErrorMessage('');
+    setTools([]);
   };
 
   const handleSubmitModal = async () => {
     if (!selectedEvent) return;
 
+    // Check if student count is valid
     if (!studentCount || isNaN(studentCount) || studentCount <= 0) {
       setErrorMessage('Por favor, ingresa una cantidad de alumnos válida.');
+      return;
+    }
+
+    // Check if at least one tool is selected
+    if (tools.length === 0) {
+      setErrorMessage('Por favor, selecciona al menos una herramienta.');
       return;
     }
 
@@ -114,7 +127,7 @@ const CardsEventsList = ({ events = [] }) => {
       numStudents: studentCount,
       isUsed: true,
       eventId: selectedEvent.id,
-      tools: tools.map(tool => tool.id)  // Extrae solo los ids de las herramientas
+      tools: tools.map(tool => tool.id)
     };
 
     try {
@@ -205,7 +218,16 @@ const CardsEventsList = ({ events = [] }) => {
                   fontSize: '1.5rem',
                 }}
               >
+                
+                
+                {/* Cambiar icono de check por algo mas intuitivo para dar click y posterioremente mostrar check*/}
+                
+                
                 <CheckIcon style={{ color: '#000', fontSize: 60 }} />
+
+
+
+                
               </Button>
             </Card>
           </Grid>
@@ -228,7 +250,7 @@ const CardsEventsList = ({ events = [] }) => {
         <DialogTitle sx={{ ...commonTypographyStyles, fontSize: '2rem', color: '#000', marginTop: '2%', padding: '16px 24px' }}>
           Detalles de la clase
         </DialogTitle>
-        <DialogContent sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '0 24px 16px' }}>
+        <DialogContent sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '0 24px 16px' }}>
           <TextField
             autoFocus
             margin="dense"
@@ -245,22 +267,30 @@ const CardsEventsList = ({ events = [] }) => {
               },
             }}
           />
-          <ToolsList selectedTools={tools} setSelectedTools={setTools} />
+          <Box sx={{ marginTop: 3 }}>
+            <ToolsList 
+              selectedTools={tools} 
+              setSelectedTools={setTools}
+              showError={errorMessage.includes('herramienta')}
+            />
+          </Box>
           {errorMessage && (
-            <Typography color="error" variant="body1" sx={{ marginTop: 2 }}>
+            <Typography variant="body2" color="error" sx={{ mt: 2, textAlign: 'center' }}>
               {errorMessage}
             </Typography>
           )}
         </DialogContent>
-        <DialogActions sx={{ padding: '16px 24px' }}>
-          <Button onClick={handleCloseModal} sx={{ ...commonTypographyStyles, color: '#000', marginRight: 'auto' }}>
-            Cancelar
+        <DialogActions sx={{ justifyContent: 'center', padding: '8px 24px' }}>
+          <Button variant="contained" onClick={handleSubmitModal} sx={{ fontFamily: 'Josefin Sans, sans-serif', fontSize: '1rem', color: 'white' }}>
+            Confirmar asistencia
           </Button>
-          <Button onClick={handleSubmitModal} sx={{ ...commonTypographyStyles, color: '#000', backgroundColor: '#3ec9a7' }}>
-            Enviar
+          <Button onClick={handleCloseModal} color="secondary" sx={{ fontFamily: 'Josefin Sans, sans-serif', fontSize: '1rem', color: 'white' }}>
+            Cancelar
           </Button>
         </DialogActions>
       </Dialog>
+
+    
     </>
   );
 };

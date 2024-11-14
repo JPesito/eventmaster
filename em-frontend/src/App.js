@@ -7,11 +7,11 @@ import Home from './components/Home';
 import Navbar from './components/Navbar';
 import SuccessMessage from './components/SuccessMessage';
 import HomeReports from './components/reports/HomeReports';
-import HomeUser from './components/users/HomeUser'
+import HomeUser from './components/users/HomeUser';
 import LoginUsers from './components/login/LoginUsers';
 import HomeAdmin from './components/users/HomeAdmin';
 import ProtectedAdminRoute from './components/login/ProtectedAdminRoute';
-//import ProtectedRoute from './components/login/ProtectedRoute';
+import EventsList from './components/EventsList';
 import './styles.css'; 
 import HomeTeacherScheduler from './components/users/HomeTeacherScheduler';
 
@@ -25,7 +25,6 @@ const App = () => {
     </AuthProvider>
   );
 };
-
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -42,6 +41,7 @@ const AnimatedRoutes = () => {
           <Route path="/about" element={<About />} />
           <Route path="/success" element={<SuccessMessage />} />
           <Route path="/teacher-scheduler" element={<HomeTeacherScheduler /> } />
+          <Route path="/events/teacher/:teacherId" element={<EventsList />} />
           <Route path="/admin" element={<ProtectedAdminRoute element={<HomeAdmin />} />} />
         </Routes>
       </CSSTransition>

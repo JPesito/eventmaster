@@ -155,6 +155,7 @@ app.get('/tools/search', async (req, res) => {
   }
 });
 
+
 //Obtener profesores
 
 app.get('/teachers/search', async (req, res) => {
@@ -169,6 +170,37 @@ app.get('/teachers/search', async (req, res) => {
     console.error('Error en la búsqueda de profesores:', error);
     res.status(500).json({ message: 'Error en el servidor' });
   }
+});
+
+
+//Obtener Listado de Eventos por ID de profesor
+
+app.get('/events/teacher/:teacherId', async (req, res) => {
+  const teacherId = req.params.teacherId;
+
+  const query = `
+    SELECT 
+        subjects.nameSubject, 
+        rooms.roomName, 
+        programs.namePrograms,
+        events.id,
+        events.startTime,
+        events.endTime
+    FROM events
+    JOIN subjects ON events.subjectid = subjects.id
+    JOIN rooms ON events.roomid = rooms.id
+    JOIN programs ON subjects.programid = programs.id
+    WHERE events.teacherid = ?;
+  `;
+
+  await db.query(query, [teacherId], (error, results) => {
+    if (error) {
+      console.error('Error al obtener eventos:', error);
+      return res.status(500).json({ message: 'Error al obtener eventos' });
+    }
+    console.log('Resultados de eventos:', results); // Agrega este log
+    res.status(200).json(results);
+  });
 });
 
 
@@ -319,6 +351,63 @@ app.post('/events', async (req, res) => {
   }
 });
 
+
+{/* POST - Tools for each Event */}
+
+app.post('/events/:eventId/tools', async (req, res) => {
+  const { eventId } = req.params;
+  const { tools } = req.body;
+
+  // Verificar si tools es un array
+  if (!Array.isArray(tools)) {
+    return res.status(400).json({ message: 'Invalid tools format; it should be an array' });
+  }
+
+  try {
+    // Start a transaction
+    await db.query('START TRANSACTION');
+
+    // Delete existing tools for this event
+    await db.query('DELETE FROM eventstools WHERE eventId = ?', [eventId]);
+
+    // Insert new tools
+    for (const tool of tools) {
+      if (tool.customToolName) {
+        // Insert custom tool into tools table if needed
+        const [insertToolResult] = await db.query(
+          'INSERT INTO tools (nameTool, createdTeacher) VALUES (?, 1) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)',
+          [tool.customToolName]
+        );
+        const toolId = insertToolResult.insertId;
+
+        // Insert the association into eventsTools
+        await db.query(
+          'INSERT INTO eventsTools (eventId, toolId) VALUES (?, ?)',
+          [eventId, toolId]
+        );
+      } else {
+        // Insert association for regular tool
+        await db.query(
+          'INSERT INTO eventsTools (eventId, toolId) VALUES (?, ?)',
+          [eventId, tool.toolId]
+        );
+      }
+    }
+
+    // Commit the transaction
+    await db.query('COMMIT');
+
+    res.status(200).json({ message: 'Tools saved successfully' });
+  } catch (error) {
+    // Rollback the transaction if there's an error
+    await db.query('ROLLBACK');
+    console.error('Error saving tools:', error);
+    res.status(500).json({ message: 'Error saving tools', error: error.message });
+  }
+});
+
+
+
 {/* POST - Events UnReserved */}
 
 app.post('/events-unreserved', async (req, res) => {
@@ -327,7 +416,7 @@ app.post('/events-unreserved', async (req, res) => {
 
   const startDateMySQL = format(new Date(start), 'yyyy-MM-dd HH:mm:ss');
   const endDateMySQL = format(new Date(end), 'yyyy-MM-dd HH:mm:ss');
-  
+
   const startDate = parseISO(start);
   const endDate = parseISO(end);
   if (!isValid(startDate) || !isValid(endDate)) {
@@ -337,7 +426,7 @@ app.post('/events-unreserved', async (req, res) => {
   try {
     const [results] = await db.query(
       'INSERT INTO events (roomID, teacherID, programID, subjectID, startTime, endTime, academicPeriodID, numStudents, isUsed, isUnreserved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [roomID, teacherID, programID, subjectID, startDateMySQL, endDateMySQL, 1, 0, false, true]
+      [roomID, teacherID, programID, subjectID, startDateMySQL, endDateMySQL, 1, 0, true, true]
     );
     res.json({ id: results.insertId });
   } catch (err) {

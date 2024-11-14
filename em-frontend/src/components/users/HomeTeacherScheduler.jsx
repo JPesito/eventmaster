@@ -18,7 +18,6 @@ import MonitorIcon from '@mui/icons-material/Monitor';
 import TeacherWeeklyScheduler from '../calendar/TeacherWeeklyScheduler';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
-import './HomeTeacherScheduler.css';
 
 export default function HomeTeacherScheduler() {
   const [rooms, setRooms] = useState([]);
@@ -54,8 +53,8 @@ export default function HomeTeacherScheduler() {
   };
 
   return (
-    <Box>
-      <Card className="styled-card" sx={{ maxWidth: '2000px', margin: 'auto', backgroundColor: 'white'/*#454084*/ }}>
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', maxWidth: '2000px', margin: 'auto', backgroundColor: 'white' }}>
         <CardHeader
           title={
             <Typography variant="h4" component="h1" align="center" gutterBottom>
@@ -63,8 +62,8 @@ export default function HomeTeacherScheduler() {
             </Typography>
           }
         />
-        <CardContent>
-          <FormControl fullWidth variant="outlined" sx={{ mb: 4 }}>
+        <CardContent sx={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <FormControl fullWidth variant="outlined" sx={{ mb: 4, maxWidth: '280px' }}>
             <InputLabel id="select-room-label">Selecciona un salón</InputLabel>
             <Select
               labelId="select-room-label"
@@ -87,15 +86,16 @@ export default function HomeTeacherScheduler() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
+                style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
               >
-                <Box position="relative">
+                <Box position="relative" sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                   <IconButton
                     onClick={handleBackClick}
-                    className="icon-button"
+                    sx={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }}
                   >
                     <ArrowBackIcon />
                   </IconButton>
-                  <Box className="backdrop-box">
+                  <Box sx={{ flex: 1, overflow: 'auto', width: '100vw' }}>
                     <TeacherWeeklyScheduler selectedRoomId={selectedRoomId} />
                   </Box>
                 </Box>
@@ -105,9 +105,9 @@ export default function HomeTeacherScheduler() {
 
           {!selectedRoom && (
             <Fade in={!selectedRoom}>
-              <Box textAlign="center" color="text.secondary" mt={4} >
-                <MonitorIcon className="monitor-icon" />
-                <Typography>Selecciona un salón para ver el horario</Typography>
+              <Box textAlign="center" color="text.secondary" mt={4}>
+                <MonitorIcon sx={{ fontSize: 100 }} />
+                <Typography sx={{ fontSize: 30 }}>Selecciona un salón para ver el horario</Typography>
               </Box>
             </Fade>
           )}
