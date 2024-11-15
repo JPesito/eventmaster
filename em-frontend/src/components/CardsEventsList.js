@@ -6,6 +6,7 @@ import ToolsList from './ToolsList';
 import { useNavigate } from 'react-router-dom';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import successAnimation from '../animations/notFound.lottie';
+import clickAnimation from '../animations/click.lottie';
 
 const formatDate = (datetime) => {
   const parsedDate = Date.parse(datetime);
@@ -162,8 +163,7 @@ const CardsEventsList = ({ events = [] }) => {
                 background: "#0052A1",
                 borderRadius: '8px',
                 overflow: 'hidden',
-                width: '100%',
-                maxWidth: '90vh',
+                width: '85%',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
                 display: 'flex',
               }}
@@ -177,7 +177,7 @@ const CardsEventsList = ({ events = [] }) => {
                   width: '85%'
                 }}
               >
-                <Grid container spacing={2} sx={{ alignItems: 'center' }}>
+                <Grid container spacing={2} sx={{ alignItems: 'center', maxWidth: '100vh' }}>
                   <Grid item xs={12} md={7}>
                     <Typography variant="h5" component="h2" sx={{ ...commonTypographyStyles, fontSize: '2rem' }}>
                       {event.nameSubject}
@@ -190,7 +190,7 @@ const CardsEventsList = ({ events = [] }) => {
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={12} md={3}>
+                  <Grid item xs={12} md={3} sx={{backgroundColor:'red'}}>
                     <Typography variant="h6" sx={{ ...commonTypographyStyles, fontSize: '1.5rem', textAlign: 'center' }}>
                       Salón
                     </Typography>
@@ -216,6 +216,7 @@ const CardsEventsList = ({ events = [] }) => {
                   height: 'auto',
                   borderRadius: '0',
                   fontSize: '1.5rem',
+                  minWidth: '190px'
                 }}
               >
                 
@@ -223,7 +224,19 @@ const CardsEventsList = ({ events = [] }) => {
                 {/* Cambiar icono de check por algo mas intuitivo para dar click y posterioremente mostrar check*/}
                 
                 
-                <CheckIcon style={{ color: '#000', fontSize: 60 }} />
+                <div style={{ width: '150px', height: '140px', overflow: 'hidden' }}>
+                  <DotLottieReact
+                    src={clickAnimation}
+                    loop={true}
+                    autoplay
+                    style={{
+                      height: '120px', 
+                      width: '120px', // Anchura mayor para permitir el recorte en 150px
+                      transform: 'translateX(-10px) translateY(10px)', // Ajusta según la parte de la animación que quieres mostrar
+                      filter: 'brightness(0.5) saturate(2) hue-rotate(20deg)',
+                    }}
+                  />
+                </div>
 
 
 

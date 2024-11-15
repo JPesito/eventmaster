@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import API_BASE_URL from '../config';
 import { TextField, Fade } from '@mui/material';
 import './home.css';
@@ -6,7 +6,8 @@ import './home.css';
 const TeachersList = ({ onSubmit }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
-  const [fadeIn, setFadeIn] = useState(false); // Estado para controlar el efecto Fade
+  const [fadeIn, setFadeIn] = useState(false); 
+  const textFieldRef = useRef(null); // Referencia al campo de texto
 
   const handleChange = async (e) => {
     const value = e.target.value;
@@ -24,17 +25,21 @@ const TeachersList = ({ onSubmit }) => {
   const handleSelect = (teacher) => {
     setQuery(`${teacher.teacherName}`);
     setResults([]);
+    textFieldRef.current.blur(); // Desenfocar el campo de texto
     onSubmit(teacher);
   };
 
   useEffect(() => {
-    // Cambia el estado de fadeIn para activar el efecto Fade
-    setFadeIn(false); // Oculta antes de que cambie
-    const timeout = setTimeout(() => {
-      setFadeIn(true); // Muestra después de un breve retraso
-    }, 50); 
+    if (results.length === 1) {
+      handleSelect(results[0]);
+    } else {
+      setFadeIn(false);
+      const timeout = setTimeout(() => {
+        setFadeIn(true);
+      }, 50);
 
-    return () => clearTimeout(timeout); 
+      return () => clearTimeout(timeout);
+    }
   }, [results]);
 
   return (
@@ -45,6 +50,7 @@ const TeachersList = ({ onSubmit }) => {
         variant="standard"
         value={query}
         onChange={handleChange}
+        inputRef={textFieldRef} // Asigna la referencia al campo de texto
         InputProps={{
           sx: {
             fontSize: '2rem',
@@ -64,8 +70,7 @@ const TeachersList = ({ onSubmit }) => {
         }}
       />
 
-      {/*Asigacion de valor por un solo dato*/}
-
+      {/* Lista de resultados con efecto Fade */}
       <Fade in={fadeIn && results.length > 0} timeout={800}>
         <ul className="results-list">
           {results.map(teacher => (
