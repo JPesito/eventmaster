@@ -190,7 +190,7 @@ const CardsEventsList = ({ events = [] }) => {
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={12} md={3} sx={{backgroundColor:'red'}}>
+                  <Grid item xs={12} md={3}>
                     <Typography variant="h6" sx={{ ...commonTypographyStyles, fontSize: '1.5rem', textAlign: 'center' }}>
                       Salón
                     </Typography>

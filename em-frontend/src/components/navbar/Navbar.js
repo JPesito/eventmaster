@@ -4,7 +4,7 @@ import { IconButton, Drawer, List, ListItem, ListItemText } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu';
 import LoginIcon from '@mui/icons-material/Login';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
-import successAnimationuser from '../animations/loginUser.lottie';
+import successAnimationuser from '../../animations/loginUser.lottie';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);

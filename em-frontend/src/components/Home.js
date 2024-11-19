@@ -1,12 +1,13 @@
 import React, { useState, useCallback, lazy, Suspense } from 'react';
 import { Fade, Button, Grid, Box } from '@mui/material';
-import { useNavigate } from 'react-router-dom'; // Importar useNavigate
+import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../config';
 import './home.css';
 import { ReactComponent as Logo } from '../assets/Logo_UH.svg';
 import ParticlesAnimation from './animations/ParticlesAnimation';
 import TeachersList from './TeachersListHome';
 import CardsEventsList from './CardsEventsList';
+import Navbar from './navbar/Navbar';
 
 // Implementación de lazy loading
 const SuccessMessage = lazy(() => import('./SuccessMessage'));
@@ -85,6 +86,13 @@ function Component() {
 
   return (
     <Box sx={{ position: 'relative', overflow: 'hidden', height: '100vh', width: '100vw', backgroundColor: 'var(--cold-color)' }}>
+      
+      {/* Navbar */}
+
+      <Navbar />
+
+      {/* Animación de particulas */}
+      
       <ParticlesAnimation />
 
       <Logo 

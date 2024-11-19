@@ -4,7 +4,7 @@ import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { AuthProvider } from './components/context/AuthContext';
 import WeeklyScheduler from './components/WeeklyScheduler';
 import Home from './components/Home';
-import Navbar from './components/Navbar';
+import Navbar from './components/navbar/Navbar';
 import SuccessMessage from './components/SuccessMessage';
 import HomeReports from './components/reports/HomeReports';
 import HomeUser from './components/users/HomeUser';
