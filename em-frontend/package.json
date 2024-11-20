@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@dotlottie/react-player": "^1.6.19",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@fullcalendar/interaction": "^6.1.15",
@@ -11,8 +12,8 @@
     "@fullcalendar/timegrid": "^6.1.15",
     "@lottiefiles/dotlottie-react": "^0.9.0",
     "@lottiefiles/react-lottie-player": "^3.5.4",
-    "@mui/icons-material": "^6.1.2",
-    "@mui/material": "^6.1.2",
+    "@mui/icons-material": "^6.1.7",
+    "@mui/material": "^6.1.7",
     "@mui/x-date-pickers": "^7.19.0",
     "@nextui-org/react": "^2.4.8",
     "@testing-library/jest-dom": "^5.17.0",
@@ -64,7 +65,6 @@
       "last 1 safari version"
     ]
   },
-
   "devDependencies": {
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",

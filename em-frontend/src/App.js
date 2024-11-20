@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { AuthProvider } from './components/context/AuthContext';
 import WeeklyScheduler from './components/WeeklyScheduler';
@@ -14,6 +14,9 @@ import ProtectedAdminRoute from './components/login/ProtectedAdminRoute';
 import EventsList from './components/EventsList';
 import './styles.css'; 
 import HomeTeacherScheduler from './components/users/HomeTeacherScheduler';
+import TestHome from './components/test/TestHome';
+import TaskManager from './components/test/TestHome';
+import Timer from './components/test/TestHome';
 
 const App = () => {
   return (
@@ -40,9 +43,15 @@ const AnimatedRoutes = () => {
           <Route path="/reports" element={<HomeReports />} />
           <Route path="/about" element={<About />} />
           <Route path="/success" element={<SuccessMessage />} />
-          <Route path="/teacher-scheduler" element={<HomeTeacherScheduler /> } />
+          <Route path="/teacher-scheduler" element={<HomeTeacherScheduler />} />
           <Route path="/events/teacher/:teacherId" element={<EventsList />} />
           <Route path="/admin" element={<ProtectedAdminRoute element={<HomeAdmin />} />} />
+
+          {/* Ruta para laboratorio */}
+          <Route path="/labs" element={<TestHome />} />
+          <Route path="/tasks" element={<TaskManager />} />
+          <Route path="/timer" element={<Timer />} />
+
         </Routes>
       </CSSTransition>
     </TransitionGroup>

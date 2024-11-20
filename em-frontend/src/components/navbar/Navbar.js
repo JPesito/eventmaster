@@ -1,56 +1,137 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; 
-import { IconButton, Drawer, List, ListItem, ListItemText } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import LoginIcon from '@mui/icons-material/Login';
+import { styled } from '@mui/material/styles';
+import {
+  Box,
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+} from '@mui/material';
+import {
+  Menu as MenuIcon,
+  Home as HomeIcon,
+  Event as EventIcon,
+  BarChart as BarChartIcon,
+  ChevronRight as ChevronRightIcon,
+  Science as ScienceIcon
+} from '@mui/icons-material';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
-import successAnimationuser from '../../animations/loginUser.lottie';
+import loginAnimation from '../../animations/click.lottie'
 
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+const drawerWidth = 240;
 
-  const toggleDrawer = (open) => () => {
-    setIsOpen(open);
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: theme.spacing(0, 1),
+  ...theme.mixins.toolbar,
+  justifyContent: 'flex-start',
+}));
+
+const Overlay = styled('div')(({ theme }) => ({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  zIndex: theme.zIndex.drawer - 1,
+  transition: 'opacity 0.3s ease-in-out',
+}));
+
+export default function ModernMaterialSidebar() {
+  const [open, setOpen] = useState(false);
+
+  const toggleDrawer = (newOpen) => (event) => {
+    if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setOpen(newOpen);
   };
 
   const menuItems = [
-    { text: 'Inicio', path: '/' },
-    { text: 'Eventos', path: '/events' },
-    { text: 'Reportes', path: '/reports' }
+    { text: 'Inicio', icon: <HomeIcon />, path: '/' },
+    { text: 'Eventos', icon: <EventIcon />, path: '/events' },
+    { text: 'Reportes', icon: <BarChartIcon />, path: '/reports' },
+    { text: 'Labs', icon: <ScienceIcon />, path: '/labs' },
   ];
 
   return (
-    <div>
+    <Box sx={{ display: 'flex' }}>
       <IconButton
-        edge="start"
         color="inherit"
-        onClick={toggleDrawer(true)}
-        aria-label="menu"
-        style={{ position: 'absolute', top: 16, right: 16 }}
+        aria-label="abrir menú"
+        edge="start"
+        onClick={toggleDrawer(!open)}
+        sx={{
+          position: 'fixed',
+          right: 16,
+          top: 16,
+          zIndex: (theme) => theme.zIndex.drawer + 2,
+          bgcolor: 'background.paper',
+          boxShadow: 1,
+          borderRadius: '50%',
+          '&:hover': {
+            bgcolor: 'action.hover',
+          },
+        }}
       >
         <MenuIcon />
       </IconButton>
-      <Drawer anchor="right" open={isOpen} onClose={toggleDrawer(false)}>
+      {open && <Overlay onClick={toggleDrawer(false)} />}
+      <Drawer
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            bgcolor: 'background.paper',
+          },
+        }}
+        variant="persistent"
+        anchor="right"
+        open={open}
+      >
+        <DrawerHeader>
+          <IconButton onClick={toggleDrawer(false)} aria-label="cerrar menú">
+            <ChevronRightIcon />
+          </IconButton>
+        </DrawerHeader>
+        <Divider />
         <List>
-          <ListItem button component={Link} to="/login" onClick={toggleDrawer(false)}>
-            <DotLottieReact
-              src={successAnimationuser}
-              loop={false}
-              autoplay
-              style={{ height: '50px', width: '50px' }}
-            />
-            <ListItemText primary="Iniciar Sesión" />
+          <ListItem disablePadding>
+            <ListItemButton component="a" href="/login">
+              <ListItemIcon>
+              <DotLottieReact
+                src={loginAnimation}
+                loop={true}
+                autoplay
+                style={{
+                  height: '100px', 
+                  width: '100px'
+                }}
+              />
+              </ListItemIcon>
+              <ListItemText primary="Iniciar Sesión" />
+            </ListItemButton>
           </ListItem>
+        </List>
+        <Divider />
+        <List>
           {menuItems.map((item) => (
-            <ListItem button key={item.text} component={Link} to={item.path} onClick={toggleDrawer(false)}>
-              <ListItemText primary={item.text} />
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton component="a" href={item.path}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItemButton>
             </ListItem>
           ))}
-          
         </List>
       </Drawer>
-    </div>
+    </Box>
   );
-};
-
-export default Navbar;
+}

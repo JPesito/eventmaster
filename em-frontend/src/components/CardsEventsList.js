@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import API_BASE_URL from '../config';
 import { Card, CardContent, Typography, Grid, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
 import ToolsList from './ToolsList';
 import { useNavigate } from 'react-router-dom';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
@@ -212,11 +211,11 @@ const CardsEventsList = ({ events = [] }) => {
                   '&:hover': {
                     backgroundColor: '#2ea88a',
                   },
-                  width: '15%',
+                  width: '200px',
                   height: 'auto',
                   borderRadius: '0',
                   fontSize: '1.5rem',
-                  minWidth: '190px'
+                  minWidth: '200px'
                 }}
               >
                 

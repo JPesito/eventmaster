@@ -85,6 +85,7 @@ function Component() {
   }, []);
 
   return (
+    
     <Box sx={{ position: 'relative', overflow: 'hidden', height: '100vh', width: '100vw', backgroundColor: 'var(--cold-color)' }}>
       
       {/* Navbar */}
