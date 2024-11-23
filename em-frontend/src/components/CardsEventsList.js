@@ -9,11 +9,11 @@ import clickAnimation from '../animations/click.lottie';
 
 const formatDate = (datetime) => {
   const parsedDate = Date.parse(datetime);
-  if (isNaN(parsedDate)) {
-    return 'Fecha inválida';
-  }
-  const date = new Date(parsedDate);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (isNaN(parsedDate)) return 'Fecha inválida';
+  return new Intl.DateTimeFormat('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+  }).format(new Date(parsedDate));
 };
 
 const commonTypographyStyles = {
@@ -40,7 +40,7 @@ const CardsEventsList = ({ events = [] }) => {
   const navigate = useNavigate();
 
   const handleNavigateToHistory = () => {
-    navigate('/event-history/${teacherId}');
+    navigate(`/event-history/${teacherId}`);
   };
 
   if (!events || events.length === 0) {
@@ -223,7 +223,7 @@ const CardsEventsList = ({ events = [] }) => {
                 {/* Cambiar icono de check por algo mas intuitivo para dar click y posterioremente mostrar check*/}
                 
                 
-                <div style={{ width: '150px', height: '140px', overflow: 'hidden' }}>
+                <div style={{ width: '180px', height: '140px', overflow: 'hidden', paddingLeft: '5px' }}>
                   <DotLottieReact
                     src={clickAnimation}
                     loop={true}
@@ -231,7 +231,7 @@ const CardsEventsList = ({ events = [] }) => {
                     style={{
                       height: '120px', 
                       width: '120px', // Anchura mayor para permitir el recorte en 150px
-                      transform: 'translateX(-10px) translateY(10px)', // Ajusta según la parte de la animación que quieres mostrar
+                      transform: 'translateX(-20px) translateY(10px)', // Ajusta según la parte de la animación que quieres mostrar
                       filter: 'brightness(0.5) saturate(2) hue-rotate(20deg)',
                     }}
                   />
@@ -263,22 +263,30 @@ const CardsEventsList = ({ events = [] }) => {
           Detalles de la clase
         </DialogTitle>
         <DialogContent sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '0 24px 16px' }}>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Cantidad de alumnos"
-            type="number"
-            fullWidth
-            variant="outlined"
-            value={studentCount}
-            onChange={(e) => setStudentCount(e.target.value)}
-            InputProps={{
-              style: {
-                fontFamily: 'Josefin Sans, sans-serif',
-                fontSize: '1.2rem',
-              },
-            }}
-          />
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Cantidad de alumnos"
+          type="number"
+          fullWidth
+          variant="outlined"
+          autoComplete="off"
+          value={studentCount}
+          onChange={(e) => setStudentCount(e.target.value)}
+          InputProps={{
+            style: {
+              fontFamily: 'Josefin Sans, sans-serif',
+              fontSize: '1.2rem',
+            },
+          }}
+          InputLabelProps={{
+            sx: {
+              fontFamily: 'Josefin Sans, sans-serif',
+              fontSize: '1.2rem',
+              color: 'rgba(0, 0, 0, 0.87)',
+            },
+          }}
+        />
           <Box sx={{ marginTop: 3 }}>
             <ToolsList 
               selectedTools={tools} 

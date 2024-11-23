@@ -51,6 +51,7 @@ const TeachersList = ({ onSubmit }) => {
         value={query}
         onChange={handleChange}
         inputRef={textFieldRef} // Asigna la referencia al campo de texto
+        autoComplete="off"
         InputProps={{
           sx: {
             fontSize: '2rem',

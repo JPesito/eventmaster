@@ -91,6 +91,7 @@ const ProgramsList = ({ onSubmit }) => {
         variant="standard"
         value={query}
         onChange={handleChange}
+        autoComplete="off"
         sx={{
           '& .MuiOutlinedInput-root': {
             borderRadius: '8px',

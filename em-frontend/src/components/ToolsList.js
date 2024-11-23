@@ -84,8 +84,22 @@ const ToolsList = ({ selectedTools, setSelectedTools, eventId }) => {
         value={inputValue}
         onChange={handleChange}
         label="Buscar herramientas"
+        autoComplete="off"
         fullWidth
         margin="normal"
+        InputProps={{
+          style: {
+            fontFamily: 'Josefin Sans, sans-serif',
+            fontSize: '1.2rem',
+          },
+        }}
+        InputLabelProps={{
+          sx: {
+            fontFamily: 'Josefin Sans, sans-serif',
+            fontSize: '1.2rem',
+            color: 'rgba(0, 0, 0, 0.87)',
+          },
+        }}
       />
       <Fade in={fadeIn && suggestions.length > 0} timeout={300}>
         <List>
@@ -107,6 +121,7 @@ const ToolsList = ({ selectedTools, setSelectedTools, eventId }) => {
           label="Especificar herramienta"
           fullWidth
           margin="normal"
+          autoComplete="off"
           onKeyPress={(e) => {
             if (e.key === 'Enter') {
               handleCustomToolSubmit();

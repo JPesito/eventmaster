@@ -17,7 +17,8 @@ import {
   Event as EventIcon,
   BarChart as BarChartIcon,
   ChevronRight as ChevronRightIcon,
-  Science as ScienceIcon
+  Science as ScienceIcon,
+  AppRegistration as Register
 } from '@mui/icons-material';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import loginAnimation from '../../animations/click.lottie'
@@ -55,6 +56,7 @@ export default function ModernMaterialSidebar() {
 
   const menuItems = [
     { text: 'Inicio', icon: <HomeIcon />, path: '/' },
+    { text: 'Registro', icon: <Register />, path: '/register' },
     { text: 'Eventos', icon: <EventIcon />, path: '/events' },
     { text: 'Reportes', icon: <BarChartIcon />, path: '/reports' },
     { text: 'Labs', icon: <ScienceIcon />, path: '/labs' },

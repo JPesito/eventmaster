@@ -41,7 +41,7 @@ const SuccessMessage = () => {
             <Typography variant="h4" sx={{ ...fontFamily, fontSize: '4rem', marginBottom:'10%' }}>
               ¡Registro exitoso!
             </Typography>
-            <Button variant="contained" sx={{ ...fontFamily, fontSize: '1rem' }} onClick={() => navigate('/')}>
+            <Button variant="contained" sx={{ ...fontFamily, fontSize: '1rem' }} onClick={() => navigate('/register')}>
               Volver
             </Button>
           </Grid>

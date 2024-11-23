@@ -10,6 +10,7 @@ import HomeReports from './components/reports/HomeReports';
 import HomeUser from './components/users/HomeUser';
 import LoginUsers from './components/login/LoginUsers';
 import HomeAdmin from './components/users/HomeAdmin';
+import HomeInit from './components/dashboard/HomeInit';
 import ProtectedAdminRoute from './components/login/ProtectedAdminRoute';
 import EventsList from './components/EventsList';
 import './styles.css'; 
@@ -36,7 +37,8 @@ const AnimatedRoutes = () => {
     <TransitionGroup>
       <CSSTransition key={location.key} classNames="fade" timeout={300}>
         <Routes location={location}>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<HomeInit />} />
+          <Route path="/register" element={<Home />} />
           <Route path="/login" element={<LoginUsers />} />
           <Route path="/events" element={<WeeklyScheduler />} />
           <Route path="/home" element={<HomeUser />} />
