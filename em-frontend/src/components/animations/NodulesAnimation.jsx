@@ -13,7 +13,7 @@ const NodulesAnimation = () => {
     canvas.height = window.innerHeight;
 
     // Colors
-    const colors = ['#0052A1', '#336FB5', '#669CCD', '#99C9E5', '#009FE3', '#EA5B13'];
+    const colors = ['#00FFFF', '#4DA6FF', '#80D8FF', '#FFFFFF', '#7FFFD4'];
 
     // Particles
     const particlesArray = [];
@@ -23,7 +23,7 @@ const NodulesAnimation = () => {
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 5 + 1;
+        this.size = Math.random() * 3 + 1;
         this.speedX = Math.random() * 3 - 1.5;
         this.speedY = Math.random() * 3 - 1.5;
         this.color = colors[Math.floor(Math.random() * colors.length)];
@@ -69,13 +69,19 @@ const NodulesAnimation = () => {
           const dy = particlesArray[i].y - particlesArray[j].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
-          if (distance < 100) {
+          if (distance < 120) {
             ctx.beginPath();
             ctx.strokeStyle = particlesArray[i].color;
-            ctx.lineWidth = 0.2;
+            ctx.lineWidth = 1;
+
+            const alpha = 1 - distance / 120; // Opacidad decrece con la distancia
+            ctx.globalAlpha = alpha * 0.7;
+
             ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
             ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
             ctx.stroke();
+
+            ctx.globalAlpha = 1;
           }
         }
       }

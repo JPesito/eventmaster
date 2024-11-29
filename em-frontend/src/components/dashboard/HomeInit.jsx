@@ -1,89 +1,124 @@
 import React from 'react';
-import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Button, 
-  Container, 
-  Grid, 
-  Card, 
-  CardContent, 
-  Link
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Container,
+  Box,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
+import { StyledHero, AnimatedEvent, StyledMaster } from './HomeInit.styles';
 import NodulesAnimation from '../animations/NodulesAnimation';
-import { CalendarToday, Assignment, Search } from '@mui/icons-material';
+import LogoEM from '../../assets/1.png';
 
 export default function HomeInit() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
-    <div>
-      <NodulesAnimation />
-      <Container>
-        <div style={{ textAlign: 'center', marginTop: '4rem', marginBottom: '4rem' }}>
-          <Typography variant="h2" component="h1" gutterBottom>
-            Bienvenido a Event Master
+    <Box 
+      sx={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        flexDirection: 'column',
+        background: 'linear-gradient(135deg, #001F3F 0%, #003366 100%)',
+      }}
+    >
+      {/* Fondo animado */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 0,
+        }}
+      >
+        <NodulesAnimation />
+      </Box>
+
+      {/* AppBar */}
+      <AppBar position="sticky" sx={{ backgroundColor: 'transparent', boxShadow: 'none', backdropFilter: 'none' }}>
+        <Toolbar>
+          <Box
+            component="img"
+            src={LogoEM}
+            alt="Logo"
+            sx={{
+              height: 40,
+              mr: 2,
+            }}
+          />
+        </Toolbar>
+      </AppBar>
+
+      {/* Contenedor principal centrado */}
+      <Container 
+        maxWidth="lg" 
+        sx={{ 
+          flexGrow: 1, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        {/* Hero Section */}
+        <StyledHero>
+          <Typography 
+            variant="h6" 
+            component="div" 
+            sx={{ textAlign: 'center', display: 'inline-block', lineHeight: 1.05 }}
+          >
+            <AnimatedEvent>EVENT</AnimatedEvent>
+            <StyledMaster>MASTER</StyledMaster>
           </Typography>
-          <Typography variant="h5" component="p" color="textSecondary" paragraph>
+          <Typography variant="h5" component="p" paragraph>
             La solución perfecta para registrar y ordenar la información de tus salones de eventos.
           </Typography>
-          <Button variant="contained" color="primary" style={{ marginRight: '1rem' }}>
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            sx={{
+              mt: 2,
+              px: 4,
+              py: 1.5,
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              borderRadius: '30px',
+              boxShadow: '0 4px 6px rgba(0, 123, 255, 0.25)',
+              '&:hover': {
+                boxShadow: '0 6px 8px rgba(0, 123, 255, 0.3)',
+              },
+            }}
+            href="#features"
+          >
             Comenzar
           </Button>
-        </div>
-        <div style={{ backgroundColor: '#f5f5f5', padding: '4rem 0' }}>
-          <Typography variant="h3" component="h2" align="center" gutterBottom>
-            Características principales
-          </Typography>
-          <Grid container spacing={4} justifyContent="center">
-            <Grid item xs={12} sm={4}>
-              <Card>
-                <CardContent>
-                  <CalendarToday style={{ fontSize: 50, marginBottom: '1rem' }} />
-                  <Typography variant="h5" component="h3" gutterBottom>
-                    Gestión de Eventos
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Registra y organiza todos tus eventos de manera eficiente.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Card>
-                <CardContent>
-                  <Assignment style={{ fontSize: 50, marginBottom: '1rem' }} />
-                  <Typography variant="h5" component="h3" gutterBottom>
-                    Información Detallada
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Mantén un registro detallado de cada salón y sus características.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Card>
-                <CardContent>
-                  <Search style={{ fontSize: 50, marginBottom: '1rem' }} />
-                  <Typography variant="h5" component="h3" gutterBottom>
-                    Búsqueda Avanzada
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Encuentra rápidamente la información que necesitas con nuestra potente herramienta de búsqueda.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </div>
+        </StyledHero>
       </Container>
-      <footer style={{ borderTop: '1px solid #e0e0e0', padding: '1rem', marginTop: '2rem' }}>
-        <Container>
-          <Typography variant="body2" color="textSecondary" align="center">
-            © 2024 Event Master. Todos los derechos reservados.
+
+      {/* Footer */}
+      <Box
+        component="footer"
+        sx={{
+          py: 3,
+          px: 2,
+          mt: 'auto',
+          backgroundColor: 'rgba(0, 31, 63, 0.9)',
+          color: '#fff',
+        }}
+      >
+        <Container maxWidth="sm">
+          <Typography variant="body2" align="center">
+            © {new Date().getFullYear()} Event Master. Todos los derechos reservados.
           </Typography>
         </Container>
-      </footer>
-    </div>
+      </Box>
+    </Box>
   );
 }
-
