@@ -12,6 +12,7 @@ import axios from 'axios'; // Cliente HTTP para realizar peticiones a APIs
 import { useNavigate } from 'react-router-dom'; // Para navegar entre rutas
 import API_BASE_URL from '../../config'; // Dirección base de la API
 import { useAuth } from '../context/AuthContext'; // Hook para manejar la autenticación
+import NodulesAnimation from '../animations/NodulesAnimation';
 
 // Configuración del tema global de Material-UI
 const theme = createTheme({
@@ -87,117 +88,128 @@ const LoginUsers = () => {
   // Renderiza el formulario de inicio de sesión
   return (
     <ThemeProvider theme={theme}>
-      <Box
-        sx={{
+      <Box 
+        sx={{ 
           display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
           minHeight: '100vh',
-          padding: 3,
         }}
       >
-        {/* Animación al cargar el formulario */}
-        <motion.div
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+        {/* Left side - Login Form */}
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'white',
+          }}
         >
-          <StyledPaper elevation={3}>
-            <Box component="form" onSubmit={handleSubmit}>
-              {/* Título */}
-              <Typography
-                variant="h4"
-                component="h1"
-                gutterBottom
-                align="center"
-                color="primary"
-              >
-                Bienvenido
-              </Typography>
-              {/* Mensaje de error */}
-              {error && <Typography color="error">{error}</Typography>}
-              {/* Campo para el usuario */}
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="username"
-                label="Usuario"
-                name="username"
-                autoComplete="username"
-                autoFocus
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Person color="primary" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              {/* Campo para la contraseña */}
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="Contraseña"
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Lock color="primary" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleClickShowPassword}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              {/* Checkbox "Recordarme" */}
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    value="remember"
-                    color="primary"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                  />
-                }
-                label="Recordarme"
-              />
-              {/* Botón de inicio de sesión */}
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-                startIcon={<Fingerprint />}
-              >
-                Iniciar Sesión
-              </Button>
-              {/* Enlace para recuperar contraseña */}
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                <Link href="#" variant="body2">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <StyledPaper >
+              <Box component="form" onSubmit={handleSubmit}>
+                <Typography
+                  variant="h4"
+                  component="h1"
+                  gutterBottom
+                  align="center"
+                  color="primary"
+                >
+                  Bienvenido
+                </Typography>
+                {error && <Typography color="error">{error}</Typography>}
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="username"
+                  label="Usuario"
+                  name="username"
+                  autoComplete="username"
+                  autoFocus
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Person color="primary" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="password"
+                  label="Contraseña"
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Lock color="primary" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleClickShowPassword}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      value="remember"
+                      color="primary"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                    />
+                  }
+                  label="Recordarme"
+                />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
+                  startIcon={<Fingerprint />}
+                >
+                  Iniciar Sesión
+                </Button>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <Link href="/reset-password" variant="body2">
                   ¿Olvidaste tu contraseña?
                 </Link>
+                </Box>
               </Box>
-            </Box>
-          </StyledPaper>
-        </motion.div>
+            </StyledPaper>
+          </motion.div>
+        </Box>
+
+        {/* Right side - Animation */}
+        <Box
+          sx={{
+            flex: 1,
+            position: 'relative',
+            background: 'linear-gradient(135deg, #001F3F 0%, #003366 100%)',
+          }}
+        >
+          <NodulesAnimation />
+        </Box>
       </Box>
     </ThemeProvider>
   );

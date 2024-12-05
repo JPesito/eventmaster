@@ -13,6 +13,8 @@ import { StyledHero, AnimatedEvent, StyledMaster } from './HomeInit.styles';
 import NodulesAnimation from '../animations/NodulesAnimation';
 import LogoEM from '../../assets/1.png';
 
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;700&display=swap" rel="stylesheet"></link>
+
 export default function HomeInit() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -71,12 +73,12 @@ export default function HomeInit() {
           <Typography 
             variant="h6" 
             component="div" 
-            sx={{ textAlign: 'center', display: 'inline-block', lineHeight: 1.05 }}
+            sx={{ textAlign: 'center', display: 'inline-block', lineHeight: 1.05}}
           >
             <AnimatedEvent>EVENT</AnimatedEvent>
             <StyledMaster>MASTER</StyledMaster>
           </Typography>
-          <Typography variant="h5" component="p" paragraph>
+          <Typography variant="h5" component="p" paragraph sx={{paddingTop: '50px', fontFamily: "'Josefin Sans', sans-serif"}}>
             La solución perfecta para registrar y ordenar la información de tus salones de eventos.
           </Typography>
           <Button
@@ -90,6 +92,7 @@ export default function HomeInit() {
               fontSize: '1.1rem',
               fontWeight: 'bold',
               borderRadius: '30px',
+              fontFamily: "'Josefin Sans', sans-serif",
               boxShadow: '0 4px 6px rgba(0, 123, 255, 0.25)',
               '&:hover': {
                 boxShadow: '0 6px 8px rgba(0, 123, 255, 0.3)',
@@ -114,8 +117,8 @@ export default function HomeInit() {
         }}
       >
         <Container maxWidth="sm">
-          <Typography variant="body2" align="center">
-            © {new Date().getFullYear()} Event Master. Todos los derechos reservados.
+          <Typography variant="body2" align="center" fontFamily="'Josefin Sans', sans-serif">
+            © {new Date().getFullYear()} Event Master
           </Typography>
         </Container>
       </Box>

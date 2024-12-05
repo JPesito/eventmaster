@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import API_BASE_URL from '../../config';
-import axios from 'axios';
-import { Bar } from 'react-chartjs-2';
+import React, { useState, useEffect, useMemo } from "react";
+import axios from "axios";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,179 +9,194 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
-import { Typography } from '@mui/material'; // Importar Typography de Material UI
-import dayjs from 'dayjs'; // Importar dayjs para el manejo de tiempos
+} from "chart.js";
+import { Typography, Box, Paper } from "@mui/material";
+import dayjs from "dayjs";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-const ColumnsGraphics = ({periodAcademic}) => {
-  const [events, setEvents] = useState([]);
-  const [graphData, setGraphData] = useState({});
-  const [totalAsistencias, setTotalAsistencias] = useState(0); // Estado para el total de asistencias
-  const [totalHoras, setTotalHoras] = useState(0); // Estado para el total de horas
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-  useEffect(() => {
-    // Obtener eventos
-    axios.get(`${API_BASE_URL}/events`).then((response) => {
-      setEvents(response.data);
-    });
+const ColumnsGraphics = ({ data }) => {
+  const [graphData, setGraphData] = useState(null);
+  const [totalAsistencias, setTotalAsistencias] = useState(0);
+  const [totalHoras, setTotalHoras] = useState(0);
+
+  // Crear un mapa de ID de programas a nombres de programas
+  const programMap = useMemo(() => {
+    const fetchPrograms = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/programs`);
+        return response.data.reduce((acc, program) => {
+          acc[program.id] = program.namePrograms;
+          return acc;
+        }, {});
+      } catch (error) {
+        console.error("Error al obtener los programas:", error);
+        return {};
+      }
+    };
+
+    return fetchPrograms();
   }, []);
 
-  const generateGraphData = async () => {
+  // Función para calcular los datos del gráfico
+  const calculateGraphData = (events, programMap) => {
     const programUsage = {};
-    let asistenciasCount = 0; // Variable para contar asistencias grupales
-    let horasCount = 0; // Variable para contar horas de uso
+    let asistenciasCount = 0;
+    let horasCount = 0;
 
-    // Obtener nombres de programas
-    const programsResponse = await axios.get(`${API_BASE_URL}/programs`);
-    const programs = programsResponse.data;
-
-    // Mapeo de programID a namePrograms
-    const programMap = programs.reduce((acc, program) => {
-      acc[program.id] = program.namePrograms; // Usar namePrograms
-      return acc;
-    }, {});
-
-    // Contar el uso de cada programa
-    events.forEach((event) => {
-      const { programID, isUsed, startTime, endTime } = event;
+    events.forEach(({ programID, isUsed, startTime, endTime }) => {
       if (isUsed) {
-        asistenciasCount++; // Sumar al contador de asistencias grupales
-
-        const programName = programMap[programID]; // Obtener nombre del programa
+        asistenciasCount++;
+        const programName = programMap[programID];
         if (programName) {
-          programUsage[programName] = (programUsage[programName] || 0) + 1; // Sumar uso
+          programUsage[programName] = (programUsage[programName] || 0) + 1;
         }
-
-        // Calcular la diferencia de horas entre startTime y endTime
-        const start = dayjs(startTime); // Convertir a objeto dayjs
-        const end = dayjs(endTime); // Convertir a objeto dayjs
-        const diffInHours = end.diff(start, 'hour', true); // Calcular la diferencia en horas, puede incluir decimales
-        horasCount += diffInHours; // Sumar la diferencia al total de horas
+        if (startTime && endTime) {
+          const start = dayjs(startTime);
+          const end = dayjs(endTime);
+          horasCount += end.diff(start, "hour", true);
+        }
       }
     });
 
-    // Actualizar los estados
-    setTotalAsistencias(asistenciasCount);
-    setTotalHoras(horasCount);
-
-    return {
-      labels: Object.keys(programUsage), // Usar los nombres de los programas como etiquetas
-      datasets: [
-        {
-          label: 'Uso de salas por programa académico',
-          data: Object.values(programUsage), // Valores de uso
-          backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        },
-      ],
-    };
+    return { programUsage, asistenciasCount, horasCount };
   };
 
+  // Efecto para procesar los datos cuando `data` cambia
   useEffect(() => {
-    const fetchGraphData = async () => {
-      const data = await generateGraphData();
-      setGraphData(data);
-    };
-    fetchGraphData();
-  }, [events]);
+    const generateGraphData = async () => {
+      if (!data || !Array.isArray(data.events)) {
+        console.error("No hay datos válidos para procesar.");
+        return;
+      }
 
+      try {
+        const { programUsage, asistenciasCount, horasCount } = calculateGraphData(
+          data.events,
+          await programMap
+        );
+
+        setTotalAsistencias(asistenciasCount);
+        setTotalHoras(horasCount);
+        setGraphData({
+          labels: Object.keys(programUsage),
+          datasets: [
+            {
+              label: "Uso de salas por programa académico",
+              data: Object.values(programUsage),
+              backgroundColor: "rgba(75, 192, 192, 0.6)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+            },
+          ],
+        });
+      } catch (error) {
+        console.error("Error al generar datos del gráfico:", error);
+      }
+    };
+
+    generateGraphData();
+  }, [data, programMap]);
+
+  // Opciones para el gráfico
   const options = {
+    responsive: true,
+    maintainAspectRatio: false,
     scales: {
       x: {
         title: {
           display: true,
-          text: 'Programas Académicos',
-          color: '#333',
+          text: "Programas Académicos",
+          color: "#333",
           font: {
-            family: 'Arial',
+            family: "Arial",
             size: 16,
-            weight: 'bold',
+            weight: "bold",
           },
         },
         ticks: {
-          color: '#333',
+          color: "#333",
           font: {
-            family: 'Arial',
+            family: "Arial",
             size: 11,
           },
-          autoSkip: false, // No saltar etiquetas
-          maxRotation: 0, // Sin rotación
-          minRotation: 0, // Sin rotación
-          callback: function (value, index, values) {
-            const label = this.getLabelForValue(value); // Obtener el nombre del programa
-            const maxLength = 15; // Longitud máxima por línea
-            
-            // Si el texto es más corto que el límite, solo retornar el texto
-            if (label.length <= maxLength) {
-              return label;
-            }
-        
-            // Dividir el texto en palabras
-            const words = label.split(' ');
-            let lines = [];
-            let currentLine = '';
-        
-            // Agrupar palabras hasta que la longitud exceda el límite
-            words.forEach((word) => {
-              if ((currentLine + word).length > maxLength) {
-                lines.push(currentLine.trim()); // Agregar la línea completa
-                currentLine = ''; // Empezar una nueva línea
-              }
-              currentLine += word + ' '; 
-            });
-        
-            // Añadir la última línea si contiene algo
-            if (currentLine) {
-              lines.push(currentLine.trim());
-            }
-        
-            return lines; // Retornar las líneas divididas
+          autoSkip: false,
+          maxRotation: 45,
+          minRotation: 45,
+          callback: function (value) {
+            const label = this.getLabelForValue(value);
+            const maxLength = 30;
+            if (label.length <= maxLength) return label;
+            return label.substring(0, maxLength) + "...";
           },
         },
       },
       y: {
         title: {
           display: true,
-          text: 'Cantidad de Uso',
-          color: '#333',
+          text: "Cantidad de Uso",
+          color: "#333",
           font: {
-            family: 'Arial',
+            family: "Arial",
             size: 16,
-            weight: 'bold',
+            weight: "bold",
           },
         },
         ticks: {
-          color: '#333',
+          color: "#333",
           font: {
-            family: 'Arial',
+            family: "Arial",
             size: 14,
           },
+          beginAtZero: true,
         },
+      },
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: "top",
+      },
+      tooltip: {
+        enabled: true,
+        mode: "index",
+        intersect: false,
       },
     },
   };
 
   return (
-    <div>
-      {/* Mostrar el total de asistencias y horas en la parte superior */}
-      <Typography variant="h6" style={{ marginBottom: '10px', color: '#333', textAlign: 'center' }}>
-        Total de Asistencias Grupales a Clases: {totalAsistencias}
-      </Typography>
-      <Typography variant="h6" style={{ marginBottom: '20px', color: '#333', textAlign: 'center' }}>
-        Total de Horas de Uso en Salas: {totalHoras.toFixed(2)} horas
-      </Typography>
+    <Paper
+      elevation={3}
+      sx={{ p: 3, bgcolor: "white", borderRadius: 2, width: "100%", maxWidth: 1200 }}
+    >
+      <Box sx={{ mb: 3 }}>
+        <Typography
+          variant="h6"
+          sx={{ color: "#333", mb: 1, textAlign: "center" }}
+        >
+          Total de Asistencias Grupales a Clases: {totalAsistencias}
+        </Typography>
+        <Typography variant="h6" sx={{ color: "#333", textAlign: "center" }}>
+          Total de Horas de Uso en Salas: {totalHoras.toFixed(2)} horas
+        </Typography>
+      </Box>
 
-      {/* Renderizar la gráfica */}
-      {graphData.labels && <Bar data={graphData} options={options} />}
-    </div>
+      <Box sx={{ height: 400 }}>
+        {graphData ? (
+          <Bar data={graphData} options={options} />
+        ) : (
+          <Typography
+            variant="body1"
+            sx={{ textAlign: "center", color: "#666", mt: 4 }}
+          >
+            Cargando datos...
+          </Typography>
+        )}
+      </Box>
+    </Paper>
   );
 };
 

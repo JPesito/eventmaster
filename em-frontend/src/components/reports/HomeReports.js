@@ -4,12 +4,10 @@ import {
   Typography, 
   Button, 
   Container, 
-  Paper,
-  Grid,
-  Select,
-  MenuItem,
   FormControl,
   InputLabel,
+  Select,
+  MenuItem,
   createTheme,
   ThemeProvider
 } from '@mui/material';
@@ -17,8 +15,10 @@ import { styled } from '@mui/system';
 import { motion, useAnimation } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import axios from 'axios';
-import API_BASE_URL from '../../config';
 import ColumnsGraphics from './ColumnsGraphics';
+import ProgramsListReport from './ProgramsListReport';
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const theme = createTheme({
   typography: {
@@ -26,40 +26,22 @@ const theme = createTheme({
     h1: {
       fontFamily: 'Montserrat, Arial, sans-serif',
       fontWeight: 700,
-    },
-    h2: {
-      fontFamily: 'Montserrat, Arial, sans-serif',
-      fontWeight: 700,
-    },
-    h3: {
-      fontFamily: 'Montserrat, Arial, sans-serif',
-      fontWeight: 700,
-    },
-    h4: {
-      fontFamily: 'Montserrat, Arial, sans-serif',
-      fontWeight: 700,
-    },
-    h5: {
-      fontFamily: 'Montserrat, Arial, sans-serif',
-      fontWeight: 700,
-    },
-    h6: {
-      fontFamily: 'Montserrat, Arial, sans-serif',
-      fontWeight: 700,
-    },
-  },
+    }
+  }
 });
-
-const MotionTypography = motion(Typography);
-const MotionButton = motion(Button);
-const MotionPaper = motion(Paper);
-const MotionBox = motion(Box);
 
 const Background = styled(Box)({
   position: 'fixed',
   inset: 0,
   background: 'linear-gradient(to bottom right, rgba(25, 118, 210, 0.8), rgba(76, 175, 80, 0.8))',
   overflow: 'hidden',
+});
+
+const Particle = styled('div')({
+  position: 'absolute',
+  backgroundColor: 'white',
+  borderRadius: '50%',
+  opacity: 0.6,
 });
 
 const CircuitPattern = () => (
@@ -76,13 +58,6 @@ const CircuitPattern = () => (
     <rect x="0" y="0" width="100%" height="100%" fill="url(#circuit-pattern)"/>
   </svg>
 );
-
-const Particle = styled('div')(({ theme }) => ({
-  position: 'absolute',
-  backgroundColor: 'white',
-  borderRadius: '50%',
-  opacity: 0.6,
-}));
 
 const FadeInSection = ({ children, delay = 0 }) => {
   const controls = useAnimation();
@@ -113,32 +88,15 @@ const FadeInSection = ({ children, delay = 0 }) => {
   );
 };
 
-const ReporteSalones = ({ periodoAcademico }) => (
-  <FadeInSection>
-    <Typography variant="h4" sx={{ color: 'white', mb: 2 }}>Reporte de Salones - {periodoAcademico}</Typography>
-    <Typography sx={{ color: 'white' }}>Aquí se mostraría el análisis detallado de los salones para el período {periodoAcademico}.</Typography>
-  </FadeInSection>
-);
+const MotionTypography = motion(Typography);
+const MotionButton = motion(Button);
 
-const ReporteProgramas = ({ periodoAcademico }) => (
-  <FadeInSection>
-    <Typography variant="h4" sx={{ color: 'white', mb: 2 }}>Reporte de Programas - {periodoAcademico}</Typography>
-    <Typography sx={{ color: 'white' }}>Aquí se mostraría el análisis de los diferentes programas para el período {periodoAcademico}.</Typography>
-  </FadeInSection>
-);
-
-const ReporteGeneral = ({ periodoAcademico }) => (
-  <FadeInSection>
-    <Typography variant="h4" sx={{ color: 'white', mb: 2 }}>Reporte General - {periodoAcademico}</Typography>
-    <ColumnsGraphics periodAcademic={periodoAcademico}/>
-  </FadeInSection>
-);
-
-export default function ReporteTecnologico() {
+function ReporteTecnologico() {
   const [particles, setParticles] = useState([]);
-  const [reporteActivo, setReporteActivo] = useState(null);
   const [periodoAcademico, setPeriodoAcademico] = useState('');
+  const [programaAcademico, setProgramaAcademico] = useState('');
   const [periodosAcademicos, setPeriodosAcademicos] = useState([]);
+  const [dataGrafica, setDataGrafica] = useState(null);
 
   const initializeParticles = useCallback(() => {
     return Array.from({ length: 50 }, () => ({
@@ -154,14 +112,12 @@ export default function ReporteTecnologico() {
     setParticles(initializeParticles());
 
     const moveParticles = () => {
-      setParticles(prevParticles =>
-        prevParticles.map(particle => {
-          return {
-            ...particle,
-            x: (particle.x + particle.speedX + 100) % 100,
-            y: (particle.y + particle.speedY + 100) % 100,
-          };
-        })
+      setParticles((prevParticles) =>
+        prevParticles.map((particle) => ({
+          ...particle,
+          x: (particle.x + particle.speedX + 100) % 100,
+          y: (particle.y + particle.speedY + 100) % 100,
+        }))
       );
     };
 
@@ -170,44 +126,52 @@ export default function ReporteTecnologico() {
   }, [initializeParticles]);
 
   useEffect(() => {
-    const fetchPeriodosAcademicos = async () => {
+    const fetchPeriodos = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/academicperiod`);
-        setPeriodosAcademicos(response.data);
+        const periodos = response.data;
+
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth() + 1;
+        const currentSemester = currentMonth <= 6 ? `${currentYear}-1` : `${currentYear}-2`;
+
+        const semestreActual = periodos.find((p) => p.academicSemester === currentSemester);
+        setPeriodosAcademicos(periodos);
+        setPeriodoAcademico(semestreActual ? semestreActual.id : '');
       } catch (error) {
-        console.error('Error al obtener los períodos académicos:', error);
+        console.error('Error al obtener períodos académicos:', error);
       }
     };
 
-    fetchPeriodosAcademicos();
+    fetchPeriodos();
   }, []);
 
-  const renderReporte = () => {
-    if (!periodoAcademico) {
-      return (
-        <FadeInSection>
-          <Typography variant="h5" sx={{ color: 'white', mb: 2 }}>
-            Por favor, seleccione un período académico para ver los reportes.
-          </Typography>
-        </FadeInSection>
-      );
-    }
+  const handleProgramSelect = useCallback((programId) => {
+    setProgramaAcademico(programId);
+  }, []);
 
-    switch (reporteActivo) {
-      case 'salones':
-        return <ReporteSalones periodoAcademico={periodoAcademico} />;
-      case 'programas':
-        return <ReporteProgramas periodoAcademico={periodoAcademico} />;
-      case 'general':
-        return <ReporteGeneral periodoAcademico={periodoAcademico} />;
-      default:
-        return (
-          <FadeInSection>
-            <Typography variant="h5" sx={{ color: 'white', mb: 2 }}>
-              Seleccione un tipo de reporte para visualizar.
-            </Typography>
-          </FadeInSection>
-        );
+  const handleSubmit = async () => {
+    if (!programaAcademico || !periodoAcademico) {
+      alert('Por favor selecciona un período académico y un programa.');
+      return;
+    }
+  
+    console.log('ID del Período Académico:', periodoAcademico); // Verificar que se está enviando el ID correcto
+    console.log('ID del Programa Académico:', programaAcademico);
+  
+    try {
+      const response = await axios.get(`${API_BASE_URL}/reports`, {
+        params: {
+          program: programaAcademico,
+          period: periodoAcademico, // Enviar el ID del período académico
+        },
+      });
+  
+      console.log('Datos recibidos del servidor:', response.data);
+      setDataGrafica(response.data);
+    } catch (error) {
+      console.error('Error al obtener los datos de las gráficas:', error);
     }
   };
 
@@ -228,7 +192,7 @@ export default function ReporteTecnologico() {
           ))}
           <CircuitPattern />
         </Background>
-        
+
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
             <FadeInSection>
@@ -240,90 +204,52 @@ export default function ReporteTecnologico() {
                 Análisis Tecnológico
               </MotionTypography>
             </FadeInSection>
+            
             <FadeInSection delay={0.2}>
-              <MotionTypography
-                variant="h4"
-                component="p"
-                sx={{ mb: 4, color: 'white', textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}
-              >
-                Visualiza el futuro de tus datos
-              </MotionTypography>
-            </FadeInSection>
-            <FadeInSection delay={0.4}>
-              <FormControl variant="outlined" sx={{ m: 1, minWidth: 200, mb: 4 }}>
-                <InputLabel id="periodo-academico-label" sx={{ color: 'white' }}>Período Académico</InputLabel>
-                <Select
-                  labelId="periodo-academico-label"
-                  id="periodo-academico-select"
-                  value={periodoAcademico}
-                  onChange={(e) => setPeriodoAcademico(e.target.value)}
-                  label="Período Académico"
-                  sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'white' } }}
-                >
-                  <MenuItem value="">
-                    <em>Ninguno</em>
-                  </MenuItem>
-                  {periodosAcademicos.map((periodo) => (
-                    <MenuItem key={periodo.id} value={periodo.academicSemester}>
-                      {periodo.academicSemester}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </FadeInSection>
-            <FadeInSection delay={0.6}>
-              <Grid container spacing={2} justifyContent="center">
-                <Grid item>
-                  <MotionButton
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    onClick={() => setReporteActivo('salones')}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    sx={{ backgroundColor: 'white', color: '#1976d2' }}
-                    disabled={!periodoAcademico}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center', width: '100%', maxWidth: 400 }}>
+                <FormControl variant="outlined" sx={{ width: '100%' }}>
+                  <InputLabel id="periodo-academico-label" sx={{ color: 'white' }}>
+                    Período Académico
+                  </InputLabel>
+                  <Select
+                    labelId="periodo-academico-label"
+                    id="periodo-academico-select"
+                    value={periodoAcademico}
+                    onChange={(e) => setPeriodoAcademico(e.target.value)}
+                    label="Período Académico"
+                    sx={{ color: 'white', borderColor: 'white' }}
                   >
-                    Reporte Salones
-                  </MotionButton>
-                </Grid>
-                <Grid item>
-                  <MotionButton
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    onClick={() => setReporteActivo('programas')}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    sx={{ backgroundColor: 'white', color: '#1976d2' }}
-                    disabled={!periodoAcademico}
-                  >
-                    Reporte Programas
-                  </MotionButton>
-                </Grid>
-                <Grid item>
-                  <MotionButton
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    onClick={() => setReporteActivo('general')}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    sx={{ backgroundColor: 'white', color: '#1976d2' }}
-                    disabled={!periodoAcademico}
-                  >
-                    Reporte General
-                  </MotionButton>
-                </Grid>
-              </Grid>
-            </FadeInSection>
-          </Box>
+                    {periodosAcademicos.map((periodo) => (
+                      <MenuItem key={periodo.id} value={periodo.id}>
+                        {periodo.academicSemester}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-          <Box sx={{ minHeight: '50vh', display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
-            {renderReporte()}
+                <Box sx={{ width: '100%', position: 'relative' }}>
+                  <ProgramsListReport onSubmit={handleProgramSelect} />
+                </Box>
+                
+                <MotionButton
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSubmit}
+                  sx={{ mt: 3 }}
+                >
+                  Ver Gráficas
+                </MotionButton>
+              </Box>
+            </FadeInSection>
+
+            <FadeInSection delay={0.4}>
+              {dataGrafica && <ColumnsGraphics data={dataGrafica} />}
+            </FadeInSection>
           </Box>
         </Container>
       </Box>
     </ThemeProvider>
   );
 }
+
+export default ReporteTecnologico;

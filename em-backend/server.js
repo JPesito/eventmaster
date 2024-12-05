@@ -492,16 +492,51 @@ app.get('/events/:teacherId', async (req, res) => {
 app.get('/programs/search', async (req, res) => {
   const { query } = req.query;
 
-  if (query.length < 2) {
-    return res.json([]);
-  }
-
   try {
     const [results] = await db.query('SELECT * FROM programs WHERE namePrograms LIKE ?', [`%${query}%`]);
     res.json(results);
   } catch (err) {
     console.error('Error searching programs:', err);
     res.status(500).json({ message: 'Error searching programs' });
+  }
+});
+
+
+app.get('/reports', async (req, res) => {
+  const { program, period } = req.query;
+
+  // Verificar que los parámetros requeridos estén presentes.
+  if (!program || !period) {
+    return res.status(400).json({ error: 'Faltan parámetros: program y/o period.' });
+  }
+
+  try {
+    // Consulta SQL adaptada a tu tabla.
+    const query = `
+      SELECT 
+        subjects.nameSubject, 
+        rooms.roomName, 
+        academicperiod.academicSemester,
+        events.id,
+        events.startTime,
+        events.endTime,
+        events.programid,
+        events.numStudents
+      FROM events
+      JOIN subjects ON events.subjectid = subjects.id
+      JOIN rooms ON events.roomid = rooms.id
+      JOIN academicperiod ON events.academicperiodid = academicperiod.id
+      WHERE events.programid = ? AND academicperiod.id = ?;
+    `;
+
+    // Ejecutar la consulta con los parámetros program y period.
+    const [rows] = await db.query(query, [program, period]);
+
+    // Devolver los resultados al cliente.
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error('Error al obtener los datos:', error);
+    res.status(500).json({ error: 'Error interno del servidor.' });
   }
 });
 
@@ -541,6 +576,13 @@ app.get('/subjects/search', async (req, res) => {
 });
 
 
+//Consultas reportes*/
+
+
+
+
+
+
 
 // Middleware para servir archivos estáticos de la carpeta build del frontend
 app.use(express.static(path.join(__dirname, '../em-frontend/build')));
@@ -549,6 +591,12 @@ app.use(express.static(path.join(__dirname, '../em-frontend/build')));
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../em-frontend/build', 'index.html'));
 });
+
+
+
+
+
+
 
 // Puerto
 const PORT = process.env.PORT;

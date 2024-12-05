@@ -9,6 +9,7 @@ import SuccessMessage from './components/SuccessMessage';
 import HomeReports from './components/reports/HomeReports';
 import HomeUser from './components/users/HomeUser';
 import LoginUsers from './components/login/LoginUsers';
+import ResetPassword from './components/login/ResetPassword';
 import HomeAdmin from './components/users/HomeAdmin';
 import HomeInit from './components/dashboard/HomeInit';
 import ProtectedAdminRoute from './components/login/ProtectedAdminRoute';
@@ -39,7 +40,7 @@ const AnimatedRoutes = () => {
         <Routes location={location}>
           <Route path="/" element={<HomeInit />} />
           <Route path="/register" element={<Home />} />
-          <Route path="/login" element={<LoginUsers />} />
+          
           <Route path="/events" element={<WeeklyScheduler />} />
           <Route path="/home" element={<HomeUser />} />
           <Route path="/reports" element={<HomeReports />} />
@@ -47,7 +48,12 @@ const AnimatedRoutes = () => {
           <Route path="/success" element={<SuccessMessage />} />
           <Route path="/teacher-scheduler" element={<HomeTeacherScheduler />} />
           <Route path="/events/teacher/:teacherId" element={<EventsList />} />
+          
           <Route path="/admin" element={<ProtectedAdminRoute element={<HomeAdmin />} />} />
+
+          {/* Rutas Login */}
+          <Route path="/login" element={<LoginUsers />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Ruta para laboratorio */}
           <Route path="/labs" element={<TestHome />} />
