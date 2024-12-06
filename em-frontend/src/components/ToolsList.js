@@ -21,7 +21,7 @@ const ToolsList = ({ selectedTools, setSelectedTools, eventId }) => {
     }
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/tools/search?query=${value}`);
+      const response = await axios.get(`${API_BASE_URL}/tools/searchi?query=${value}`);
       setSuggestions(response.data);
       setFadeIn(true);
     } catch (error) {

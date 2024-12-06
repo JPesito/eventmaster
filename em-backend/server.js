@@ -67,7 +67,13 @@ app.get('/api/test-connection', async (req, res) => {
 
 
 
+
+
+
+
+
 /********  Login ********/
+
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -136,7 +142,28 @@ app.get('/secure-route', authenticateJWT, (req, res) => {
 
 
 
+
+
+
+
 /********  Peticiones GET ********/
+
+
+// Consultorio Juridico
+
+app.get('/expedientes/search', async (req, res) => {
+  const { query } = req.query;
+
+  try {
+    const [results] = await db.query('SELECT nameEXPEDIENTE FROM expedientes WHERE codigo LIKE ?', [`%${query}%`]);
+    res.json(results);
+  } catch (err) {
+    console.error('Error searching tools:', err);
+    res.status(500).json({ message: 'Error searching tools' });
+  }
+});
+
+
 
 // Tecnologias y/o Herramientas
 app.get('/tools/search', async (req, res) => {
@@ -162,7 +189,7 @@ app.get('/teachers/search', async (req, res) => {
   const { query } = req.query;
 
   try {
-    const sql = 'SELECT * FROM teachers WHERE teacherName LIKE ?';
+    const sql = 'SELECT * FROM teachers WHERE teacherName LIKE ? ';
     const [results] = await db.query(sql, [`%${query}%`]);
 
     res.json(results);
@@ -239,6 +266,8 @@ app.get('/academicperiod', async (req, res) => {
   }
 });
 
+
+
 // Ruta para obtener eventos
 
 app.get('/eventsroom', async (req, res) => {
@@ -262,9 +291,10 @@ app.get('/eventsroom', async (req, res) => {
 });
 
 
+
 app.post('events/:eventId/tools', async (req, res) => {
   const { eventId } = req.params;
-  const { tools } = req.body; // Lista de toolIds
+  const { tools } = req.body; 
   try {
     // Inserta cada toolId con el eventId en la tabla eventstools
     const values = tools.map(toolId => [eventId, toolId]);
@@ -298,6 +328,7 @@ app.delete('/events/:id', async (req, res) => {
     res.status(500).json({ message: 'Error al eliminar el evento' });
   }
 });
+
 
 //Modificar evento
 
@@ -350,6 +381,7 @@ app.post('/events', async (req, res) => {
     res.status(500).json({ message: 'Error creating event' });
   }
 });
+
 
 
 {/* POST - Tools for each Event */}

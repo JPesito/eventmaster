@@ -16,9 +16,10 @@ import ProtectedAdminRoute from './components/login/ProtectedAdminRoute';
 import EventsList from './components/EventsList';
 import './styles.css'; 
 import HomeTeacherScheduler from './components/users/HomeTeacherScheduler';
-import TestHome from './components/test/TestHome';
-import TaskManager from './components/test/TestHome';
-import Timer from './components/test/TestHome';
+import ClasePadre from './components/test/ClasePadre';
+import TaskManager from './components/test/ClasePadre';
+import Timer from './components/test/ClasePadre';
+import ListaDeTareas from './components/test/ListaDeTareas';
 
 const App = () => {
   return (
@@ -56,7 +57,7 @@ const AnimatedRoutes = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Ruta para laboratorio */}
-          <Route path="/labs" element={<TestHome />} />
+          <Route path="/labs" element={<ListaDeTareas />} />
           <Route path="/tasks" element={<TaskManager />} />
           <Route path="/timer" element={<Timer />} />
 
