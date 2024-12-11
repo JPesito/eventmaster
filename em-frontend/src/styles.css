@@ -5,8 +5,18 @@
     box-sizing: border-box;
   }
 
-  body {
-    margin: 0
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    min-height: 100%;
+    overflow-x: hidden; /* Evita desplazamiento horizontal innecesario */
+  }
+  
+  #root {
+    height: 100%; /* Permite que React ocupe todo el espacio */
+    display: flex;
+    flex-direction: column;
   }
 
 

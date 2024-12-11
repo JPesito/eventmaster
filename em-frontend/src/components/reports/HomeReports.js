@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Container, Typography, Button, CircularProgress } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Container, Typography, Button, CircularProgress, Select, MenuItem } from '@mui/material';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import Filters from './Filters';  // Puedes mantener este para el Período Académico
-import GraphicsViewer from './GraphicsViewer';  // Nuevo componente para mostrar gráficos
-import ErrorMessage from './ErrorMessage';  // Nuevo componente para mostrar errores
-import ProgramsListReport from './ProgramsListReport'; // Importa tu componente Autocomplete
+import GraphicsViewer from './GraphicsViewer';
+import ErrorMessage from './ErrorMessage';
+import ProgramsListReport from './ProgramsListReport';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -15,24 +14,32 @@ const ReporteTecnologico = () => {
   const [periodosAcademicos, setPeriodosAcademicos] = useState([]);
   const [dataGrafica, setDataGrafica] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingPeriodos, setLoadingPeriodos] = useState(true);
   const [error, setError] = useState('');
 
-  // Consultar los períodos académicos disponibles
   useEffect(() => {
     const fetchPeriodos = async () => {
+      setLoadingPeriodos(true);
       try {
         const response = await axios.get(`${API_BASE_URL}/academicperiod`);
-        console.log(response.data);  // Verifica que se están recibiendo los datos correctamente
-        setPeriodosAcademicos(response.data);
+        console.log('Respuesta completa de períodos académicos:', response);
+        if (Array.isArray(response.data)) {
+          console.log('Períodos académicos recibidos:', response.data);
+          setPeriodosAcademicos(response.data);
+        } else {
+          console.error('La respuesta no es un array:', response.data);
+          setError('Error en el formato de los datos de períodos académicos.');
+        }
       } catch (err) {
         console.error('Error al obtener períodos académicos:', err);
         setError('Error al obtener los períodos académicos.');
+      } finally {
+        setLoadingPeriodos(false);
       }
     };
     fetchPeriodos();
   }, []);
 
-  // Función para manejar la consulta de gráficos
   const handleSubmit = async () => {
     if (!programaAcademico || !periodoAcademico) {
       setError('Por favor selecciona un período académico y un programa.');
@@ -57,7 +64,7 @@ const ReporteTecnologico = () => {
   };
 
   const handleProgramSelect = (programId) => {
-    setProgramaAcademico(programId); // Guardamos el ID del programa seleccionado
+    setProgramaAcademico(programId);
   };
 
   return (
@@ -66,28 +73,48 @@ const ReporteTecnologico = () => {
         <Typography variant="h1" sx={{ textAlign: 'center', color: 'white', fontWeight: 'bold' }}>
           Análisis Tecnológico
         </Typography>
-        
-        {/* Filtro de Período Académico */}
-        <Filters
-          periodosAcademicos={periodosAcademicos}
-          periodoAcademico={periodoAcademico}  // Pasar el estado 'periodoAcademico'
-          setPeriodoAcademico={setPeriodoAcademico}
-        />
 
+        <Box sx={{ marginTop: 3 }}>
+          <Typography variant="h6" sx={{ color: 'white' }}>
+            Período Académico
+          </Typography>
+          {loadingPeriodos ? (
+            <CircularProgress size={24} sx={{ color: 'white' }} />
+          ) : (
+            <Select
+              value={periodoAcademico}
+              onChange={(e) => setPeriodoAcademico(e.target.value)}
+              displayEmpty
+              fullWidth
+              sx={{ color: 'white', '& .MuiSelect-icon': { color: 'white' } }}
+            >
+              <MenuItem value="" disabled>
+                Selecciona un período académico
+              </MenuItem>
+              {periodosAcademicos.map((periodo) => (
+                <MenuItem key={periodo.id} value={periodo.id}>
+                  {periodo.namePeriod}
+                </MenuItem>
+              ))}
+            </Select>
+          )}
+        </Box>
 
-        {/* Autocomplete para Programas Académicos */}
         <Box sx={{ marginTop: 3 }}>
           <ProgramsListReport onSubmit={handleProgramSelect} />
         </Box>
 
-        {/* Botón para enviar y cargar gráficos */}
         <motion.div>
-          <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 3, display: 'block', margin: '0 auto' }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSubmit}
+            sx={{ mt: 3, display: 'block', margin: '0 auto' }}
+          >
             Ver Gráficas
           </Button>
         </motion.div>
 
-        {/* Mostrar mensaje de error o gráficos */}
         {loading ? (
           <CircularProgress sx={{ display: 'block', margin: '50px auto' }} />
         ) : error ? (
@@ -101,3 +128,4 @@ const ReporteTecnologico = () => {
 };
 
 export default ReporteTecnologico;
+

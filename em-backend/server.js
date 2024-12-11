@@ -608,7 +608,62 @@ app.get('/subjects/search', async (req, res) => {
 });
 
 
-//Consultas reportes*/
+
+
+
+{/* EndPoints de Reportes*/}
+
+app.get('/general-report', async (req, res) => {
+  const programId = req.query.programId; // Parámetro del programa
+  const academicPeriodId = req.query.academicPeriodId; // Período académico
+  try {
+    const [results] = await db.query(`
+      SELECT 
+        academicperiod.academicSemester,
+        events.startTime,
+        events.endTime,
+        events.programid,
+        events.numStudents
+      FROM events
+      JOIN subjects ON events.subjectid = subjects.id
+      JOIN rooms ON events.roomid = rooms.id
+      JOIN academicperiod ON events.academicperiodid = academicperiod.id
+      WHERE events.programid = ? AND academicperiod.id = ?;
+    `, [programId, academicPeriodId]);
+
+    const processedData = processEventData(results);
+    res.json(processedData);
+  } catch (error) {
+    res.status(500).send("Error fetching data");
+  }
+});
+
+function processEventData(data) {
+  // Procesa la data para calcular las métricas necesarias (ejemplo simplificado)
+  return data.reduce((acc, event) => {
+    const { academicSemester, numStudents, startTime, endTime } = event;
+    const duration = (new Date(endTime) - new Date(startTime)) / 3600000;
+
+    if (!acc[academicSemester]) {
+      acc[academicSemester] = {
+        groupClasses: 0,
+        hours: 0,
+        studentAttendance: 0,
+        totalEnrolled: 0,
+      };
+    }
+
+    acc[academicSemester].groupClasses++;
+    acc[academicSemester].hours += duration;
+    acc[academicSemester].studentAttendance += numStudents;
+
+    return acc;
+  }, {});
+}
+
+
+
+
 
 
 

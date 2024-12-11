@@ -8,11 +8,14 @@ const Filters = ({ periodosAcademicos, periodoAcademico, setPeriodoAcademico }) 
           Período Académico
         </Typography>
         <Select
-          value={periodoAcademico}  // Asegúrate de que esté recibiendo el valor correcto
-          onChange={(e) => setPeriodoAcademico(e.target.value)}  // Actualiza el estado con el valor seleccionado
+          value={periodoAcademico}
+          onChange={(e) => {
+            console.log('Periodo seleccionado:', e.target.value); // Verifica el valor seleccionado
+            setPeriodoAcademico(e.target.value);
+          }}
           displayEmpty
           fullWidth
-          sx={{ color: 'white', '& .MuiSelect-icon': { color: 'white' } }}
+          sx={{ color: 'black', backgroundColor: 'white' }}
         >
           {periodosAcademicos.length > 0 ? (
             periodosAcademicos.map((periodo) => (
