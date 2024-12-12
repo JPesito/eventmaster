@@ -614,34 +614,48 @@ app.get('/subjects/search', async (req, res) => {
 {/* EndPoints de Reportes*/}
 
 app.get('/general-report', async (req, res) => {
-  const programId = req.query.programId; // Parámetro del programa
-  const academicPeriodId = req.query.academicPeriodId; // Período académico
+  const programId = req.query.programId;
+  const academicPeriodId = req.query.academicPeriodId;
   try {
     const [results] = await db.query(`
+      WITH EventMetrics AS (
+        SELECT 
+          academicperiod.academicSemester,
+          events.startTime,
+          events.endTime,
+          events.programid,
+          events.numStudents
+        FROM events
+        JOIN academicperiod ON events.academicperiodid = academicperiod.id
+        WHERE events.programid = ? AND academicperiod.id = ?
+      ),
+      EnrollmentInfo AS (
+        SELECT 
+          academicperiod.academicSemester,
+          academicperiodprograms.totalEnrolled
+        FROM academicperiodprograms
+        JOIN academicperiod ON academicperiodprograms.academicperiodID = academicperiod.id
+        WHERE academicperiodprograms.programID = ? AND academicperiod.id = ?
+        GROUP BY academicperiod.academicSemester, academicperiodprograms.totalEnrolled
+      )
       SELECT 
-        academicperiod.academicSemester,
-        events.startTime,
-        events.endTime,
-        events.programid,
-        events.numStudents
-      FROM events
-      JOIN subjects ON events.subjectid = subjects.id
-      JOIN rooms ON events.roomid = rooms.id
-      JOIN academicperiod ON events.academicperiodid = academicperiod.id
-      WHERE events.programid = ? AND academicperiod.id = ?;
-    `, [programId, academicPeriodId]);
+        em.*,
+        ei.totalEnrolled
+      FROM EventMetrics em
+      LEFT JOIN EnrollmentInfo ei ON em.academicSemester = ei.academicSemester
+    `, [programId, academicPeriodId, programId, academicPeriodId]);
 
     const processedData = processEventData(results);
     res.json(processedData);
   } catch (error) {
+    console.error('Error in general-report:', error);
     res.status(500).send("Error fetching data");
   }
 });
 
 function processEventData(data) {
-  // Procesa la data para calcular las métricas necesarias (ejemplo simplificado)
   return data.reduce((acc, event) => {
-    const { academicSemester, numStudents, startTime, endTime } = event;
+    const { academicSemester, numStudents, startTime, endTime, totalEnrolled } = event;
     const duration = (new Date(endTime) - new Date(startTime)) / 3600000;
 
     if (!acc[academicSemester]) {
@@ -649,7 +663,7 @@ function processEventData(data) {
         groupClasses: 0,
         hours: 0,
         studentAttendance: 0,
-        totalEnrolled: 0,
+        totalEnrolled: totalEnrolled || 0,
       };
     }
 

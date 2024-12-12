@@ -5,103 +5,54 @@ import {
   Container, 
   Typography, 
   Paper, 
-  Grid, 
-  Card, 
-  CardContent, 
-  CardActions, 
   Button, 
-  List, 
-  ListItem, 
-  ListItemText, 
-  Divider,
-  CssBaseline,
-  Select,
-  MenuItem,
   FormControl,
   InputLabel,
+  Select,
+  MenuItem,
   CircularProgress,
   TextField,
-  Fade
+  Fade,
+  CssBaseline
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import { 
-  Computer, 
-  Group, 
-  AccessTime, 
-  School 
-} from '@mui/icons-material';
+import { Computer, Group, AccessTime, School } from '@mui/icons-material';
 import { debounce } from 'lodash';
 import AcademicTable from './AcademicTable';
+import {
+  DynamicBackground,
+  StyledPaper,
+  IconWrapper,
+  ReportCard,
+  ResultsList,
+  ResultItem
+} from './styles-report';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000/api';
 
-// Estilos personalizados (mantenidos y extendidos)
-const DynamicBackground = styled(Box)(({ theme }) => ({
-  minHeight: '100%',
-  height: 'auto',
-  background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
-  backgroundSize: '400% 400%',
-  animation: '$gradient 15s ease infinite',
-  '@keyframes gradient': {
-    '0%': { backgroundPosition: '0% 50%' },
-    '50%': { backgroundPosition: '100% 50%' },
-    '100%': { backgroundPosition: '0% 50%' },
-  },
-  overflowY: 'auto',
-  padding: theme.spacing(4, 0),
-}));
+const REPORTS = [
+  { title: 'Uso de Laboratorios', icon: Computer, description: 'Análisis detallado del uso de los laboratorios de tecnología.' },
+  { title: 'Asistencia de Estudiantes', icon: Group, description: 'Estadísticas de asistencia a las salas de tecnología por grupo y curso.' },
+  { title: 'Horarios Pico', icon: AccessTime, description: 'Identificación de las horas de mayor demanda en las salas.' },
+  { title: 'Rendimiento Académico', icon: School, description: 'Correlación entre el uso de salas y el rendimiento académico.' }
+];
 
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
-  margin: theme.spacing(2, 0),
-  backgroundColor: theme.palette.background.paper,
-  boxShadow: theme.shadows[5],
-}));
+const transformReportData = (rawData) => {
+  if (!rawData || typeof rawData !== 'object') {
+    return [];
+  }
 
-const IconWrapper = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 60,
-  height: 60,
-  borderRadius: '50%',
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
-  marginBottom: theme.spacing(2),
-}));
+  console.log('rawData', rawData);
 
-const ReportCard = styled(Card)(({ theme }) => ({
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-  '&:hover': {
-    transform: 'translateY(-5px)',
-    boxShadow: theme.shadows[4],
-  },
-}));
-
-const ResultsList = styled('ul')(({ theme }) => ({
-  listStyle: 'none',
-  padding: 0,
-  margin: 0,
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: theme.shadows[2],
-  position: 'absolute',
-  zIndex: 1,
-  width: '100%',
-  maxHeight: '200px',
-  overflowY: 'auto',
-}));
-
-const ResultItem = styled('li')(({ theme }) => ({
-  padding: theme.spacing(1, 2),
-  cursor: 'pointer',
-  '&:hover': {
-    backgroundColor: theme.palette.action.hover,
-  },
-}));
+  return Object.entries(rawData).map(([academicSemester, data]) => ({
+    programName: data.programName || 'N/A',
+    groupClasses: data.groupClasses,
+    academicPeriod: academicSemester,
+    hoursUsed: Math.round(data.hours * 100) / 100,
+    students: data.studentAttendance,
+    promStudents: Math.round((data.studentAttendance / data.groupClasses) * 100) / 100,
+    totalEnrolled: data.totalEnrolled
+  }));
+};
 
 const HomeReport = () => {
   const [reportData, setReportData] = useState([]);
@@ -109,41 +60,31 @@ const HomeReport = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Estados para el buscador de programas
   const [query, setQuery] = useState('');
   const [programResults, setProgramResults] = useState([]);
   const [programLoading, setProgramLoading] = useState(false);
   const [programError, setProgramError] = useState(null);
   const [selectedProgram, setSelectedProgram] = useState(null);
-
-  // Nuevo estado para controlar la visibilidad del reporte
   const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     const fetchAcademicPeriods = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/academicperiod`);
-        const periodsFromAPI = response.data;
-        // Añadir la opción de Reporte General al principio del array
         setAcademicPeriods([
           { id: 'general', name: 'Reporte General', academicSemester: 'Reporte General' },
-          ...periodsFromAPI
+          ...response.data
         ]);
-        setLoading(false);
       } catch (err) {
         console.error('Error fetching academic periods:', err);
-        setError('Error al cargar los períodos académicos. Por favor, intente de nuevo más tarde.');
+        setError('Error al cargar los períodos académicos');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchAcademicPeriods();
   }, []);
-
-  const handlePeriodChange = (event) => {
-    setSelectedPeriod(event.target.value);
-  };
 
   const fetchPrograms = useCallback(async (searchQuery) => {
     if (searchQuery.length < 2) {
@@ -159,8 +100,7 @@ const HomeReport = () => {
       setProgramResults(response.data);
     } catch (err) {
       console.error('Error fetching programs:', err);
-      setProgramError('Error al buscar programas. Por favor, intente de nuevo.');
-      setProgramResults([]);
+      setProgramError('Error al buscar programas');
     } finally {
       setProgramLoading(false);
     }
@@ -170,6 +110,43 @@ const HomeReport = () => {
     () => debounce(fetchPrograms, 300),
     [fetchPrograms]
   );
+
+  const handleShowReport = async () => {
+    if (!selectedPeriod || !selectedProgram) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await axios.get(`${API_BASE_URL}/general-report`, {
+        params: {
+          academicPeriodId: selectedPeriod,
+          programId: selectedProgram.id
+        }
+      });
+      
+      const transformedData = transformReportData(response.data);
+      
+      if (!Array.isArray(transformedData)) {
+        throw new Error('Formato de datos inválido');
+      }
+      
+      setReportData(transformedData);
+      setShowReport(true);
+    } catch (err) {
+      console.error('Error al cargar los datos del reporte:', err);
+      setError('Error al cargar los datos del reporte');
+      setShowReport(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePeriodChange = (event) => {
+    setSelectedPeriod(event.target.value);
+  };
 
   const handleProgramChange = useCallback((e) => {
     const value = e.target.value;
@@ -183,28 +160,6 @@ const HomeReport = () => {
     setProgramResults([]);
   }, []);
 
-  // Nueva función para manejar el clic en el botón "Ver Reporte"
-  const handleShowReport = async () => {
-    if (selectedPeriod && selectedProgram) {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/general-report`, {
-          params: { period: selectedPeriod, program: selectedProgram.id },
-        });
-        setReportData(response.data); // Guardar los datos del reporte
-        setShowReport(true); // Mostrar el componente
-      } catch (err) {
-        console.error('Error al cargar los datos del reporte:', err);
-      }
-    }
-  };
-
-  const reports = [
-    { title: 'Uso de Laboratorios', icon: <Computer />, description: 'Análisis detallado del uso de los laboratorios de tecnología.' },
-    { title: 'Asistencia de Estudiantes', icon: <Group />, description: 'Estadísticas de asistencia a las salas de tecnología por grupo y curso.' },
-    { title: 'Horarios Pico', icon: <AccessTime />, description: 'Identificación de las horas de mayor demanda en las salas.' },
-    { title: 'Rendimiento Académico', icon: <School />, description: 'Correlación entre el uso de salas y el rendimiento académico.' },
-  ];
-
   return (
     <>
       <CssBaseline />
@@ -215,7 +170,7 @@ const HomeReport = () => {
               Panel de Reportes de Salas Tecnológicas
             </Typography>
             <Typography variant="h5" align="center" style={{ color: 'white' }} paragraph>
-              Monitoreo y análisis del uso de recursos tecnológicos en nuestra institución
+              Monitoreo y análisis del uso de recursos tecnológicos
             </Typography>
             
             {loading ? (
@@ -226,13 +181,13 @@ const HomeReport = () => {
               <Typography color="error" align="center">{error}</Typography>
             ) : (
               <Box display="flex" flexDirection="column" gap={2} mb={4}>
-                {/* Selectores */}
                 <Box display="flex" gap={2}>
                   <FormControl variant="outlined" style={{ flex: 1 }}>
-                    <InputLabel id="academic-period-label" style={{ color: 'white' }}>Período Académico</InputLabel>
+                    <InputLabel id="academic-period-label" style={{ color: 'white' }}>
+                      Período Académico
+                    </InputLabel>
                     <Select
                       labelId="academic-period-label"
-                      id="academic-period-select"
                       value={selectedPeriod}
                       onChange={handlePeriodChange}
                       label="Período Académico"
@@ -245,10 +200,10 @@ const HomeReport = () => {
                       ))}
                     </Select>
                   </FormControl>
+                  
                   <Box position="relative" style={{ flex: 1 }}>
                     <TextField
                       fullWidth
-                      id="program-search"
                       label="Buscar programa académico"
                       variant="outlined"
                       value={query}
@@ -263,16 +218,10 @@ const HomeReport = () => {
                       }}
                       sx={{
                         '& .MuiOutlinedInput-root': {
-                          '& fieldset': {
-                            borderColor: 'white',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'white',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: 'white',
-                          },
-                        },
+                          '& fieldset': { borderColor: 'white' },
+                          '&:hover fieldset': { borderColor: 'white' },
+                          '&.Mui-focused fieldset': { borderColor: 'white' }
+                        }
                       }}
                     />
                     {programError && <Typography color="error">{programError}</Typography>}
@@ -290,8 +239,7 @@ const HomeReport = () => {
                     </Fade>
                   </Box>
                 </Box>
-  
-                {/* Botón para mostrar reporte */}
+
                 <Box display="flex" justifyContent="center" mt={4}>
                   <Button
                     variant="contained"
@@ -299,24 +247,18 @@ const HomeReport = () => {
                     onClick={handleShowReport}
                     disabled={!selectedPeriod || !selectedProgram}
                   >
-                    Ver Reportes
+                    Ver Reporte
                   </Button>
                 </Box>
               </Box>
             )}
-  
-            {/* Renderizado condicional del componente AcademicTable */}
-            {showReport ? (
-              <AcademicTable data={reportData} />
-            ) : (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleShowReport}
-                disabled={!selectedPeriod || !selectedProgram}
-              >
-                Ver Reportes
-              </Button>
+
+            {showReport && !loading && (
+              <Fade in={showReport}>
+                <div>
+                  <AcademicTable data={reportData} />
+                </div>
+              </Fade>
             )}
           </Box>
         </Container>
@@ -326,4 +268,3 @@ const HomeReport = () => {
 };
 
 export default HomeReport;
-
