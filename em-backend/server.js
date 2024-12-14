@@ -675,6 +675,34 @@ function processEventData(data) {
   }, {});
 }
 
+app.get('/group-attendance', async (req, res) => {
+  const { academicPeriodId, programId } = req.query;
+
+  try {
+    const [rooms] = await db.query('SELECT id, roomName FROM rooms ORDER BY id');
+    const roomNames = rooms.map((room) => room.roomName);
+
+    const [attendance] = await db.query(
+      `SELECT roomID, COUNT(*) AS attendance
+       FROM events
+       WHERE academicPeriodId = ? AND programId = ?
+       GROUP BY roomID`,
+      [academicPeriodId, programId]
+    );
+
+    const attendances = rooms.map(
+      (room) => attendance.find((a) => a.roomID === room.id)?.attendance || 0
+    );
+
+    res.json({ rooms: roomNames, attendances });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al obtener los datos de asistencia grupal' });
+  }
+});
+
+
+
 
 
 

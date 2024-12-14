@@ -18,6 +18,7 @@ import {
 import { Computer, Group, AccessTime, School } from '@mui/icons-material';
 import { debounce } from 'lodash';
 import AcademicTable from './AcademicTable';
+import GroupAttendanceChart from './GroupAttendanceChart';
 import {
   DynamicBackground,
   StyledPaper,
@@ -28,13 +29,6 @@ import {
 } from './styles-report';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000/api';
-
-const REPORTS = [
-  { title: 'Uso de Laboratorios', icon: Computer, description: 'Análisis detallado del uso de los laboratorios de tecnología.' },
-  { title: 'Asistencia de Estudiantes', icon: Group, description: 'Estadísticas de asistencia a las salas de tecnología por grupo y curso.' },
-  { title: 'Horarios Pico', icon: AccessTime, description: 'Identificación de las horas de mayor demanda en las salas.' },
-  { title: 'Rendimiento Académico', icon: School, description: 'Correlación entre el uso de salas y el rendimiento académico.' }
-];
 
 const transformReportData = (rawData) => {
   if (!rawData || typeof rawData !== 'object') {
@@ -257,6 +251,10 @@ const HomeReport = () => {
               <Fade in={showReport}>
                 <div>
                   <AcademicTable data={reportData} />
+                  <GroupAttendanceChart
+                    academicPeriodId={selectedPeriod}
+                    programId={selectedProgram.id}
+                  />
                 </div>
               </Fade>
             )}
