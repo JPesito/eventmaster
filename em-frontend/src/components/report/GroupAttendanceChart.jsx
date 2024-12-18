@@ -78,7 +78,17 @@ const GroupAttendanceChart = ({ academicPeriodId, programId }) => {
   }
 
   return (
-    <Box my={4}>
+    <Box 
+      my={4} 
+      mx="auto" 
+      p={4} 
+      sx={{ 
+        backgroundColor: 'white', 
+        borderRadius: 2, 
+        boxShadow: 3, 
+        maxWidth: 800 
+      }}
+    >
       <Typography variant="h5" align="center" gutterBottom>
         Asistencias Grupales por Sala
       </Typography>

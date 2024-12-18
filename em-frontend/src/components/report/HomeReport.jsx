@@ -4,7 +4,6 @@ import {
   Box, 
   Container, 
   Typography, 
-  Paper, 
   Button, 
   FormControl,
   InputLabel,
@@ -15,10 +14,10 @@ import {
   Fade,
   CssBaseline
 } from '@mui/material';
-import { Computer, Group, AccessTime, School } from '@mui/icons-material';
 import { debounce } from 'lodash';
 import AcademicTable from './AcademicTable';
 import GroupAttendanceChart from './GroupAttendanceChart';
+import SubjectsReport from './SubjectsReport';
 import {
   DynamicBackground,
   StyledPaper,
@@ -255,6 +254,11 @@ const HomeReport = () => {
                     academicPeriodId={selectedPeriod}
                     programId={selectedProgram.id}
                   />
+                  <Box mt={4}>
+                    {selectedPeriod && (
+                      <SubjectsReport academicPeriodId={selectedPeriod} />
+                    )}
+                  </Box>
                 </div>
               </Fade>
             )}

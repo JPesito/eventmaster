@@ -701,7 +701,31 @@ app.get('/group-attendance', async (req, res) => {
   }
 });
 
+app.get('/subjects-by-period', async (req, res) => {
+  const { academicPeriodId } = req.query;
 
+  if (!academicPeriodId) {
+    return res.status(400).json({ error: 'El ID del período académico es obligatorio' });
+  }
+
+  try {
+    const [subjects] = await db.query(
+      `SELECT DISTINCT s.nameSubject
+       FROM events e
+       INNER JOIN subjects s ON e.subjectID = s.id
+       WHERE e.academicPeriodID = ?
+       ORDER BY s.nameSubject`,
+      [academicPeriodId]
+    );
+
+    const subjectNames = subjects.map((subject) => subject.nameSubject);
+
+    res.json({ subjects: subjectNames });
+  } catch (err) {
+    console.error('Error al obtener las asignaturas por período académico:', err);
+    res.status(500).json({ error: 'Error al obtener las asignaturas' });
+  }
+});
 
 
 
