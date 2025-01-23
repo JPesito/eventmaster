@@ -12,7 +12,7 @@ const colorChange = keyframes`
 // Texto animado para EVENT
 export const AnimatedEvent = styled('span')(({ theme }) => ({
   fontWeight: 'bold',
-  fontSize: '4rem',
+  fontSize: '6rem',
   animation: `${colorChange} 20s ease-in-out infinite`,
   paddingRight: '8.2rem',
 }));
@@ -21,7 +21,7 @@ export const AnimatedEvent = styled('span')(({ theme }) => ({
 export const StyledMaster = styled('span')(({ theme }) => ({
   display: 'block',
   fontWeight: 'bold',
-  fontSize: '4rem',
+  fontSize: '6rem',
   marginTop: theme.spacing(-1),
   marginLeft: '8.2rem',
 }));

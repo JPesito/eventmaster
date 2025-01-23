@@ -13,19 +13,28 @@ const ToolsList = ({ selectedTools, setSelectedTools, eventId }) => {
   const handleChange = async (e) => {
     const value = e.target.value;
     setInputValue(value);
-
+  
     if (value.length < 2) {
       setSuggestions([]);
       setFadeIn(false);
       return;
     }
-
+  
     try {
-      const response = await axios.get(`${API_BASE_URL}/tools/searchi?query=${value}`);
-      setSuggestions(response.data);
-      setFadeIn(true);
+      const response = await axios.get(`${API_BASE_URL}/tools/search?query=${value}`);
+      
+      // Verifica si la respuesta es un array antes de actualizar el estado
+      if (Array.isArray(response.data)) {
+        setSuggestions(response.data);
+        setFadeIn(true);
+      } else {
+        setSuggestions([]);
+        setFadeIn(false);
+      }
     } catch (error) {
       console.error('Error fetching tools:', error);
+      setSuggestions([]);  // Asegúrate de limpiar las sugerencias si hay un error
+      setFadeIn(false);
     }
   };
 

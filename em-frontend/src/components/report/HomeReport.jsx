@@ -175,6 +175,9 @@ const HomeReport = () => {
             ) : (
               <Box display="flex" flexDirection="column" gap={2} mb={4}>
                 <Box display="flex" gap={2}>
+
+                {/*Año Academico*/}
+
                   <FormControl variant="outlined" style={{ flex: 1 }}>
                     <InputLabel id="academic-period-label" style={{ color: 'white' }}>
                       Período Académico
@@ -256,7 +259,7 @@ const HomeReport = () => {
                   />
                   <Box mt={4}>
                     {selectedPeriod && (
-                      <SubjectsReport academicPeriodId={selectedPeriod} />
+                      <SubjectsReport academicPeriodId={selectedPeriod} programId={selectedProgram.id}/>
                     )}
                   </Box>
                 </div>

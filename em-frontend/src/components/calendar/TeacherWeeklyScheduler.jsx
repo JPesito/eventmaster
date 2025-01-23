@@ -96,11 +96,35 @@ const TeacherWeeklyScheduler = ({ selectedRoomId }) => {
     setIsModalOpen(true);
   };
 
+  const getAcademicPeriod = (date) => {
+    const year = date.year();
+    const month = date.month() + 1; // Moment.js months are 0-indexed
+    let periodID = null;
+
+    if (year === 2022) {
+      periodID = month <= 6 ? 3 : 4;
+    } else if (year === 2023) {
+      periodID = month <= 6 ? 5 : 14; // 2023-2
+    } else if (year === 2024) {
+      periodID = month <= 6 ? 6 : 7;
+    } else if (year === 2025) {
+      periodID = month <= 6 ? 8 : 9;
+    } else if (year === 2026) {
+      periodID = month <= 6 ? 10 : 11;
+    } else if (year === 2027) {
+      periodID = month <= 6 ? 12 : 13;
+    }
+
+    return periodID;
+  };
+
   const handleSaveEvent = async (eventToSave) => {
     if (!eventToSave || !eventToSave.start || !eventToSave.end || !selectedRoomId || !selectedTeacher || !selectedProgramId || !selectedSubject) {
       setShowErrorMessage(true);
       return;
     }
+
+    const periodID = getAcademicPeriod(eventToSave.start);
   
     const baseEvent = {
       roomID: selectedRoomId,
@@ -109,6 +133,7 @@ const TeacherWeeklyScheduler = ({ selectedRoomId }) => {
       subjectID: selectedSubject.id,
       start: eventToSave.start.format('YYYY-MM-DD HH:mm:ss'),
       end: eventToSave.end.format('YYYY-MM-DD HH:mm:ss'),
+      periodID,
     };
   
     try {
@@ -269,7 +294,7 @@ const TeacherWeeklyScheduler = ({ selectedRoomId }) => {
               setSelectedProgramId={setSelectedProgramId} 
               selectedSubject={selectedSubject} 
               setSelectedSubject={setSelectedSubject} 
-              handleSaveEvent={handleSaveEvent} 
+              handleSaveEvent={handleSaveEvent}
             />
           )}
 

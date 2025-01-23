@@ -357,7 +357,7 @@ app.put('/events/:id', async (req, res) => {
 // Crear eventos
 
 app.post('/events', async (req, res) => {
-  const { roomID, teacherID, programID, subjectID, start, end } = req.body;
+  const { teacherID, roomID, subjectID, start, end, programID} = req.body;
 
   // Cambiar esto
   const startDateMySQL = format(new Date(start), 'yyyy-MM-dd HH:mm:ss');
@@ -372,8 +372,8 @@ app.post('/events', async (req, res) => {
 
   try {
     const [results] = await db.query(
-      'INSERT INTO events (roomID, teacherID, programID, subjectID, startTime, endTime, academicPeriodID, numStudents, isUsed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [roomID, teacherID, programID, subjectID, startDateMySQL, endDateMySQL, 1, 0, false]
+      'INSERT INTO events (teacherID, roomID, subjectID,  startTime, endTime, numStudents, isUsed, programID, academicPeriodID, isUnreserved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [teacherID, roomID, subjectID, startDateMySQL, endDateMySQL, 0, 0, programID, 8, 0]
     );
     res.json({ id: results.insertId });
   } catch (err) {
@@ -443,7 +443,7 @@ app.post('/events/:eventId/tools', async (req, res) => {
 {/* POST - Events UnReserved */}
 
 app.post('/events-unreserved', async (req, res) => {
-  const { roomID, teacherID, programID, subjectID, start, end } = req.body;
+  const { roomID, teacherID, programID, subjectID, start, end, periodID } = req.body;
 
 
   const startDateMySQL = format(new Date(start), 'yyyy-MM-dd HH:mm:ss');
@@ -458,7 +458,7 @@ app.post('/events-unreserved', async (req, res) => {
   try {
     const [results] = await db.query(
       'INSERT INTO events (roomID, teacherID, programID, subjectID, startTime, endTime, academicPeriodID, numStudents, isUsed, isUnreserved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [roomID, teacherID, programID, subjectID, startDateMySQL, endDateMySQL, 1, 0, true, true]
+      [roomID, teacherID, programID, subjectID, startDateMySQL, endDateMySQL, periodID, 0, true, true]
     );
     res.json({ id: results.insertId });
   } catch (err) {
@@ -701,28 +701,41 @@ app.get('/group-attendance', async (req, res) => {
   }
 });
 
-app.get('/subjects-by-period', async (req, res) => {
-  const { academicPeriodId } = req.query;
 
-  if (!academicPeriodId) {
-    return res.status(400).json({ error: 'El ID del período académico es obligatorio' });
+app.get('/subjects-by-period', async (req, res) => {
+  const { academicPeriodId, programId } = req.query;
+
+  if (!academicPeriodId || !programId) {
+    return res.status(400).json({ error: 'Se requieren academicPeriodId y academicProgramId' });
   }
 
   try {
-    const [subjects] = await db.query(
-      `SELECT DISTINCT s.nameSubject
-       FROM events e
-       INNER JOIN subjects s ON e.subjectID = s.id
-       WHERE e.academicPeriodID = ?
-       ORDER BY s.nameSubject`,
-      [academicPeriodId]
+    const result = await db.query(
+      `WITH SubjectCounts AS (
+        SELECT 
+          s.id,
+          s.nameSubject,
+          COUNT(*) as subject_count,
+          (SELECT COUNT(*) 
+           FROM events e2 
+           WHERE e2.academicperiodid = ? AND e2.programid = ?) as total_events
+        FROM events e
+        INNER JOIN subjects s ON e.subjectID = s.id
+        WHERE e.academicperiodid = ? AND e.programid = ?
+        GROUP BY s.id, s.nameSubject
+      )
+      SELECT 
+        nameSubject,
+        subject_count as repeticiones,
+        ROUND((subject_count * 100.0 / total_events), 2) as porcentaje
+      FROM SubjectCounts
+      ORDER BY porcentaje DESC, nameSubject`,
+      [academicPeriodId, programId, academicPeriodId, programId]
     );
 
-    const subjectNames = subjects.map((subject) => subject.nameSubject);
-
-    res.json({ subjects: subjectNames });
-  } catch (err) {
-    console.error('Error al obtener las asignaturas por período académico:', err);
+    res.json(result);
+  } catch (error) {
+    console.error('Error al obtener asignaturas:', error);
     res.status(500).json({ error: 'Error al obtener las asignaturas' });
   }
 });
