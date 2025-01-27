@@ -2,33 +2,29 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { AuthProvider } from './components/context/AuthContext';
+import ProtectedRoute from './components/routes/ProtectedRoute';
+import ProtectedAdminRoute from './components/routes/ProtectedAdminRoute';
 import WeeklyScheduler from './components/WeeklyScheduler';
-import Home from './components/Home';
 import Navbar from './components/navbar/Navbar';
-import SuccessMessage from './components/SuccessMessage';
 import HomeReport from './components/report/HomeReport';
 import HomeUser from './components/users/HomeUser';
 import LoginUsers from './components/login/LoginUsers';
 import ResetPassword from './components/login/ResetPassword';
 import HomeAdmin from './components/users/HomeAdmin';
 import HomeInit from './components/dashboard/HomeInit';
-import ProtectedAdminRoute from './components/login/ProtectedAdminRoute';
 import EventsList from './components/EventsList';
-import './styles.css'; 
+import './styles.css';
 import HomeTeacherScheduler from './components/users/HomeTeacherScheduler';
-import ClasePadre from './components/test/ClasePadre';
-import TaskManager from './components/test/ClasePadre';
-import Timer from './components/test/ClasePadre';
-import ListaDeTareas from './components/test/ListaDeTareas';
 
 const App = () => {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      {/* Coloca AuthProvider dentro del Router */}
+      <AuthProvider>
         <Navbar />
         <AnimatedRoutes />
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 };
 
@@ -40,28 +36,21 @@ const AnimatedRoutes = () => {
       <TransitionGroup>
         <CSSTransition key={location.key} classNames="fade" timeout={300}>
           <Routes location={location}>
+            {/* Rutas públicas */}
             <Route path="/" element={<HomeInit />} />
-            <Route path="/register" element={<Home />} />
-            
-            <Route path="/events" element={<WeeklyScheduler />} />
-            <Route path="/home" element={<HomeUser />} />
-            <Route path="/reports" element={<HomeReport />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/success" element={<SuccessMessage />} />
-            <Route path="/teacher-scheduler" element={<HomeTeacherScheduler />} />
-            <Route path="/events/teacher/:teacherId" element={<EventsList />} />
-            
-            <Route path="/admin" element={<ProtectedAdminRoute element={<HomeAdmin />} />} />
-
-            {/* Rutas Login */}
             <Route path="/login" element={<LoginUsers />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/about" element={<About />} />
 
-            {/* Ruta para laboratorio */}
-            <Route path="/labs" element={<ListaDeTareas />} />
-            <Route path="/tasks" element={<TaskManager />} />
-            <Route path="/timer" element={<Timer />} />
+            {/* Rutas protegidas */}
+            <Route path="/home" element={<ProtectedRoute><HomeUser /></ProtectedRoute>} />
+            <Route path="/events" element={<ProtectedRoute><WeeklyScheduler /></ProtectedRoute>} />
+            <Route path="/reports" element={<ProtectedRoute><HomeReport /></ProtectedRoute>} />
+            <Route path="/teacher-scheduler" element={<ProtectedRoute><HomeTeacherScheduler /></ProtectedRoute>} />
+            <Route path="/events/teacher/:teacherId" element={<ProtectedRoute><EventsList /></ProtectedRoute>} />
 
+            {/* Rutas administrativas protegidas */}
+            <Route path="/admin" element={<ProtectedAdminRoute><HomeAdmin /></ProtectedAdminRoute>} />
           </Routes>
         </CSSTransition>
       </TransitionGroup>
@@ -69,6 +58,7 @@ const AnimatedRoutes = () => {
   );
 };
 
+// Ruta "Acerca de"
 const About = () => <h2>Acerca de</h2>;
 
 export default App;

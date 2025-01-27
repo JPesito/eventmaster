@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, Drawer, Divider, IconButton } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Drawer, Divider, IconButton, Typography } from '@mui/material';
 import { ChevronRight as ChevronRightIcon, Home as HomeIcon, AppRegistration as Register, Event as EventIcon, BarChart as BarChartIcon, Science as ScienceIcon } from '@mui/icons-material';
 import { DrawerHeader, Overlay, drawerStyles } from './Navbar.styles';
 import { MenuButton } from './MenuButton';
@@ -17,12 +17,27 @@ const menuItems = [
 
 export default function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [user, setUser] = useState(null);
 
+  // Verifica si hay un usuario logueado en el localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    console.log('Usuario desde localStorage:', storedUser);
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+  
   const toggleDrawer = (newOpen) => (event) => {
     if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
     setIsDrawerOpen(newOpen);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('user'); // Elimina al usuario del localStorage
+    setUser(null); // Actualiza el estado a null para que el nombre desaparezca
   };
 
   return (
@@ -45,7 +60,16 @@ export default function Navbar() {
           </IconButton>
         </DrawerHeader>
         <Divider />
-        <LoginButton animationSrc={loginAnimation} />
+        {/* Mostrar login o nombre de usuario */}
+        {!user ? (
+          <LoginButton animationSrc={loginAnimation} />
+        ) : (
+          <>
+            <Typography variant="body1">Hola, {user.fullName}</Typography>
+            <Divider />
+            <button onClick={handleLogout}>Cerrar sesión</button>
+          </>
+        )}
         <Divider />
         <SidebarMenu menuItems={menuItems} />
       </Drawer>

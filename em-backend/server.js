@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const mysql = require('mysql2/promise'); // Para usar promesas
+const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt'); 
 const jwt = require('jsonwebtoken'); 
 const cors = require('cors');
@@ -8,7 +8,12 @@ const { format, isValid, parseISO } = require('date-fns'); // Usaremos date-fns 
 require('dotenv').config();
 const app = express();
 
-const allowedOrigins = [ process.env.REACT_APP_API_BASE_URL, 'http://10.0.0.163:3002', 'http://10.0.0.163:3000', 'http://localhost:3002' ]
+const allowedOrigins = [
+  process.env.REACT_APP_API_BASE_URL,
+  'http://10.0.0.163:3002',
+  'http://10.0.0.163:3000',
+  'http://localhost:3002',
+];
 
 // Middlewares
 app.use(cors({
@@ -26,6 +31,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
 
 let db; // Declarar la variable de conexión
 
@@ -54,95 +60,53 @@ initializeDbConnection();
 
 
 
-// Nuevo endpoint para probar la conexión
-app.get('/api/test-connection', async (req, res) => {
-  try {
-    await db.query('SELECT 1');
-    res.json({ success: true, message: 'Database connection successful' });
-  } catch (error) {
-    console.error('Database connection test failed:', error);
-    res.status(500).json({ success: false, message: 'Database connection failed', error: error.message });
+// Ruta de login
+app.post('/auth/login', async (req, res) => {
+  const { userName, userPassword } = req.body;
+
+  console.log('Contraseña proporcionada:', userPassword);
+  
+
+  if (!userName || !userPassword) {
+    return res.status(400).json({ error: 'Faltan datos requeridos.' });
   }
-});
-
-
-
-
-
-
-
-
-/********  Login ********/
-
-app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
 
   try {
-    const sql = 'SELECT * FROM users WHERE userName = ?';
-    const [results] = await db.query(sql, [username]);
+    // Buscar al usuario en la base de datos
+    const [rows] = await db.query('SELECT * FROM users WHERE userName = ?', [userName]);
 
-    if (results.length > 0) {
-      const user = results[0];
+    console.log('Resultado de la consulta:', rows);
 
-      const isMatch = await bcrypt.compare(password, user.userPassword);
-
-      if (isMatch) {
-        const token = jwt.sign(
-          { id: user.id, username: user.userName, isAdmin: user.isAdmin }, 
-          'secret_key',
-          { expiresIn: '1h' }
-        );
-        return res.json({ token });
-      } else {
-        return res.status(401).json({ message: 'Contraseña incorrecta. Intenta nuevamente.' });
-      }
-    } else {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
+    if (rows.length === 0) {
+      return res.status(401).json({ error: 'Usuario o contraseña incorrectos.' });
     }
-  } catch (error) {
-    console.error('Error en el servidor:', error);
-    res.status(500).json({ message: 'Error en el servidor' });
-  }
-});
 
-/********  Middleware para verificar token y si es admin ********/
-const authenticateJWT = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
+    const user = rows[0];
 
-  if (token) {
-    jwt.verify(token, 'secret_key', (err, decoded) => {
-      if (err) {
-        return res.status(403).json({ message: 'Acceso no autorizado' });
+    // Verificar la contraseña
+    try {
+      console.log('Password del usuario en la base de datos:', user.userPassword);
+      const isPasswordValid = await bcrypt.compare(userPassword, String(user.userPassword));
+      console.log('Es válida la contraseña:', isPasswordValid);
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: 'Usuario o contraseña incorrectos.' });
       }
-      req.user = decoded; // Almacenar la información del usuario
-      next();
+    } catch (err) {
+      console.error('Error al comparar contraseñas:', err);
+      return res.status(500).json({ error: 'Error en la comparación de contraseñas.' });
+    }
+
+    // Crear el token JWT
+    const token = jwt.sign({ id: user.id, userName: user.UserName }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
     });
-  } else {
-    res.status(401).json({ message: 'Token no proporcionado' });
+
+    res.status(200).json({ message: 'Inicio de sesión exitoso.', token });
+  } catch (err) {
+    console.error('Error en el inicio de sesión:', err);
+    res.status(500).json({ error: 'Error en el servidor.' });
   }
-};
-
-const isAdmin = (req, res, next) => {
-  if (req.user && req.user.isAdmin) {
-    next();
-  } else {
-    res.status(403).json({ message: 'Solo los administradores pueden acceder a esta ruta' });
-  }
-};
-
-/********  Ruta protegida solo para admins ********/
-app.get('/admin-only', authenticateJWT, isAdmin, (req, res) => {
-  res.json({ message: 'Bienvenido, Admin' });
 });
-
-// Rutas normales protegidas por JWT
-app.get('/secure-route', authenticateJWT, (req, res) => {
-  res.json({ message: `Bienvenido, ${req.user.username}` });
-});
-
-
-
-
 
 
 
