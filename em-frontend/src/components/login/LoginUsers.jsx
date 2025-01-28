@@ -41,24 +41,24 @@ export default function LoginUsers({ open, onClose }) {
       setError('La contraseña no puede estar vacía.');
       return;
     }
-  
+
     setIsLoading(true); // Mostrar indicador de carga
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         userName,
         userPassword,
       });
-  
+
       // Obtener los datos de la respuesta, que incluyen token y nombre completo
       const { token, fullName } = response.data;
-  
+
       // Guardar en localStorage
       const user = { fullName, token };
       localStorage.setItem('user', JSON.stringify(user));
-  
+
       // Llamar a la función de login del contexto de autenticación
       login(token); // Guardar el token en el contexto y localStorage
-  
+
       // Redirigir al usuario a /home
       setError('');
       navigate('/home');
@@ -73,17 +73,6 @@ export default function LoginUsers({ open, onClose }) {
       setIsLoading(false); // Ocultar indicador de carga
     }
   };
-  
-
-  const checkLoginStatus = () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user) {
-      alert('El usuario está logueado: ' + user.fullName); // Muestra el nombre del usuario
-    } else {
-      alert('No hay usuario logueado');
-    }
-  };
-  
 
   return (
     <Modal
@@ -104,30 +93,34 @@ export default function LoginUsers({ open, onClose }) {
             </Box>
 
             {/* Imagen en la parte superior */}
-            <img src={LogoUH} alt="Login" />
+            <img src={LogoUH} alt="Login" className="logo-uh" />
 
             {/* Título y campos de texto */}
-            <Typography variant="h6" className="login-text">
+            <Typography variant="h6" className="login-text" gutterBottom sx={{paddingBottom: '30px'}}>
               Bienvenido, ingresa con tus datos
             </Typography>
 
-            <TextField
-              label="Nombre de Usuario"
-              variant="outlined"
-              className="login-input"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              error={!!error}
-            />
-            <TextField
-              label="Contraseña"
-              type="password"
-              variant="outlined"
-              className="login-input"
-              value={userPassword}
-              onChange={(e) => setUserPassword(e.target.value)}
-              error={!!error}
-            />
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%' }}>
+              <TextField
+                label="Nombre de Usuario"
+                variant="outlined"
+                className="login-input"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                error={!!error}
+                fullWidth
+              />
+              <TextField
+                label="Contraseña"
+                type="password"
+                variant="outlined"
+                className="login-input"
+                value={userPassword}
+                onChange={(e) => setUserPassword(e.target.value)}
+                error={!!error}
+                fullWidth
+              />
+            </Box>
 
             {/* Mostrar errores */}
             {error && (
@@ -135,6 +128,7 @@ export default function LoginUsers({ open, onClose }) {
                 variant="body2"
                 color="error"
                 className="error-message"
+                sx={{ marginTop: 1 }}
               >
                 {error}
               </Typography>
@@ -146,24 +140,22 @@ export default function LoginUsers({ open, onClose }) {
               className="login-button"
               onClick={handleLogin}
               disabled={isLoading} // Deshabilitar mientras carga
+              sx={{ marginTop: 2, width: '100%' }}
             >
               {isLoading ? 'Cargando...' : 'Iniciar Sesión'}
             </Button>
-            <Typography variant="body2" color="text.secondary" className="login-link">
+
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              className="login-link"
+              sx={{ marginTop: 2 }}
+            >
               ¿Olvidaste tu contraseña?{' '}
               <Button size="small" sx={{ textTransform: 'none', padding: 0 }}>
                 Recuperar
               </Button>
             </Typography>
-
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={checkLoginStatus}
-              sx={{ marginTop: 2 }}
-            >
-              Verificar Estado de Sesión
-            </Button>
           </Box>
 
           {/* Parte derecha: Imagen de fondo (solo para pantallas grandes) */}

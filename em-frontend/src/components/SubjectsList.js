@@ -55,6 +55,7 @@ const SubjectsList = ({ onSubmit, programId }) => {
         id="subject-search"
         label="Buscar asignatura..."
         variant="standard"
+        autoComplete='off'
         value={query}
         onChange={handleChange}
         disabled={!programId}

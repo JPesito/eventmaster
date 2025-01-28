@@ -10,7 +10,7 @@ import loginAnimation from '../../animations/click.lottie';
 const menuItems = [
   { text: 'Inicio', icon: <HomeIcon />, path: '/' },
   { text: 'Registro', icon: <Register />, path: '/register' },
-  { text: 'Eventos', icon: <EventIcon />, path: '/events' },
+  { text: 'Eventos', icon: <EventIcon />, path: '/home' },
   { text: 'Reportes', icon: <BarChartIcon />, path: '/reports' },
   { text: 'Labs', icon: <ScienceIcon />, path: '/labs' },
 ];

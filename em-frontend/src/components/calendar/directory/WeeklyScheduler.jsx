@@ -1,29 +1,40 @@
-"use client"
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import axios from 'axios';
 import 'moment/locale/es';
-import API_BASE_URL from '../config';
+import API_BASE_URL from '../../../config';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
+import { Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, Paper } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import EventDialog from './calendar/EventDialog';
-import EventSnackbar from './calendar/EventSnackbar';
+import EventDialog from '../EventDialog';
+import EventSnackbar from '../EventSnackbar';
 import { useMediaQuery } from '@mui/material';
 
-moment.locale('es');
-const localizer = momentLocalizer(moment);
+moment.locale("es")
+const localizer = momentLocalizer(moment)
 
 const theme = createTheme({
   palette: {
-    primary: { main: '#0052A1' },
-    background: { default: '#ffffff' },
+    primary: { main: "#3f51b5" },
+    secondary: { main: "#f50057" },
+    background: { default: "#172439" },
   },
-});
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: "none",
+        },
+      },
+    },
+  },
+})
 
 const WeeklyScheduler = ({ selectedRoomId }) => {
   const [events, setEvents] = useState([]);
@@ -188,23 +199,33 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
   }, []);
 
   const eventStyleGetter = (event) => {
-    const backgroundColor = colorMap(event.teacherID);
+    const backgroundColor = colorMap(event.teacherID)
     return {
       style: {
         backgroundColor,
-        borderRadius: '0px',
+        borderRadius: "4px",
         opacity: 0.8,
-        color: 'white',
-        border: 'none',
-        display: 'block',
-        fontSize: '14px',
-        fontWeight: 'bold',
-        height: '100%',
-        textAlign: 'center',
-        width: '100%',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
+        color: "white",
+        border: "none",
+        display: "block",
+        fontSize: "14px",
+        fontWeight: "bold",
+        height: "100%",
+        textAlign: "left",
+        width: "100%",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        padding: "4px",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+      },
+    }
+  }
+
+  const cellStyleGetter = (date, view) => {
+    return {
+      style: {
+        border: "1px solid #505050",
       },
     };
   };
@@ -212,48 +233,52 @@ const WeeklyScheduler = ({ selectedRoomId }) => {
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterMoment}>
-        <Box sx={{ height: '100vh', width: '100%', p: 2 }}>
-          {isLoading ? (
-            <Box>Cargando eventos...</Box>
-          ) : (
-            <Calendar
-              localizer={localizer}
-              events={events}
-              startAccessor="start"
-              endAccessor="end"
-              selectable
-              onSelectSlot={handleSelectSlot}
-              onSelectEvent={handleEventClick}
-              views={isMobile ? ['day'] : ['week']}
-              defaultView={isMobile ? 'day' : 'week'}
-              step={30}
-              timeslots={2}
-              min={new Date(2024, 0, 1, 7, 0)}
-              max={new Date(2024, 0, 1, 22, 0)}
-              eventPropGetter={eventStyleGetter}
-              messages={{
-                next: "Siguiente",
-                previous: "Anterior",
-                month: "Mes",
-                week: "Semana",
-                day: "Día",
-                today: "",
-                noEventsInRange: "No hay eventos en este rango",
-              }}
-              formats={{
-                timeGutterFormat: (date, culture, localizer) =>
-                  localizer.format(date, 'HH:mm', culture),
-              }}
-              components={{
-                timeSlotWrapper: ({ children }) => React.cloneElement(children, {
-                  style: {
-                    ...children.props.style,
-                    height: '60px',
-                  }
-                }),
-              }}
-            />
-          )}
+        <Box sx={{ height: "100vh", width: "100%", backgroundColor: "#F0F0F0" }}>
+
+            {isLoading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+                Cargando eventos...
+              </Box>
+            ) : (
+              <Calendar
+  localizer={localizer}
+  events={events}
+  startAccessor="start"
+  endAccessor="end"
+  selectable
+  onSelectSlot={handleSelectSlot}
+  onSelectEvent={handleEventClick}
+  views={isMobile ? ["day"] : ["week"]}
+  defaultView={isMobile ? "day" : "week"}
+  step={30}
+  timeslots={2}
+  min={new Date(2024, 0, 1, 7, 0)}
+  max={new Date(2024, 0, 1, 23, 0)}
+  eventPropGetter={eventStyleGetter}
+  dayPropGetter={cellStyleGetter}
+  messages={{
+    next: "Siguiente",
+    previous: "Anterior",
+    month: "Mes",
+    week: "Semana",
+    day: "Día",
+    today: "Hoy",
+    noEventsInRange: "No hay eventos en este rango",
+  }}
+  formats={{
+    timeGutterFormat: (date, culture, localizer) => localizer.format(date, "HH:mm", culture),
+  }}
+  components={{
+    timeSlotWrapper: ({ children }) =>
+      React.cloneElement(children, {
+        style: {
+          ...children.props.style,
+          height: "30px",
+        },
+      }),
+  }}
+/>
+            )}
 
           <Dialog
             open={isAlertOpen}

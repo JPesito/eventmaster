@@ -160,7 +160,12 @@ export default function HomeInit() {
           <Typography
             variant="h6"
             component="div"
-            sx={{ textAlign: 'center', display: 'inline-block', lineHeight: 1.05 }}
+            sx={{
+              textAlign: 'center',
+              display: 'inline-block',
+              lineHeight: 1.05,
+              marginBottom: '10px', // Reduce el espacio entre el título y la descripción
+            }}
           >
             <AnimatedEvent>EVENT</AnimatedEvent>
             <StyledMaster>MASTER</StyledMaster>
@@ -169,11 +174,17 @@ export default function HomeInit() {
             variant="body1"
             component="p"
             paragraph
-            sx={{ paddingTop: '25px', fontFamily: "'Josefin Sans', sans-serif", fontSize: '25px' }}
+            sx={{
+              paddingTop: '15px', // Reduce la distancia entre la descripción y las tarjetas
+              fontFamily: "'Josefin Sans', sans-serif",
+              fontSize: '25px',
+              marginBottom: '30px', // Espacio ajustado entre la descripción y las tarjetas
+            }}
           >
             La solución ideal para registrar y ordenar la información de tus espacios institucionales.
           </Typography>
         </StyledHero>
+
 
         {/* Tarjetas */}
         <Box
@@ -196,7 +207,7 @@ export default function HomeInit() {
             handleOpenLoginModal, // Abre el modal al hacer clic
             '#9fc7fc',
             IconAgregar,
-            'Agregar Reserva',
+            'Programación de Salas',
             'Crea y administra nuevas reservas de salas de forma rápida y sencilla.'
           )}
         </Box>

@@ -4,7 +4,7 @@ import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { AuthProvider } from './components/context/AuthContext';
 import ProtectedRoute from './components/routes/ProtectedRoute';
 import ProtectedAdminRoute from './components/routes/ProtectedAdminRoute';
-import WeeklyScheduler from './components/WeeklyScheduler';
+import WeeklyScheduler from './components/calendar/directory/WeeklyScheduler';
 import Navbar from './components/navbar/Navbar';
 import HomeReport from './components/report/HomeReport';
 import HomeUser from './components/users/HomeUser';
@@ -13,6 +13,7 @@ import ResetPassword from './components/login/ResetPassword';
 import HomeAdmin from './components/users/HomeAdmin';
 import HomeInit from './components/dashboard/HomeInit';
 import EventsList from './components/EventsList';
+import Home from './components/Home';
 import './styles.css';
 import HomeTeacherScheduler from './components/users/HomeTeacherScheduler';
 
@@ -41,6 +42,7 @@ const AnimatedRoutes = () => {
             <Route path="/login" element={<LoginUsers />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/about" element={<About />} />
+            <Route path="/register" element={<Home />} />
 
             {/* Rutas protegidas */}
             <Route path="/home" element={<ProtectedRoute><HomeUser /></ProtectedRoute>} />

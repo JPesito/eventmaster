@@ -43,6 +43,7 @@ const TeachersList = ({ onSubmit }) => {
         id="standard-basic"
         label="Nombres o Apellidos..."
         variant="standard"
+        autoComplete='off'
         value={query}
         onChange={handleChange}
         sx={{
