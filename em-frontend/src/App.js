@@ -4,10 +4,11 @@ import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import { AuthProvider } from './components/context/AuthContext';
 import ProtectedRoute from './components/routes/ProtectedRoute';
 import ProtectedAdminRoute from './components/routes/ProtectedAdminRoute';
-import WeeklyScheduler from './components/calendar/directory/WeeklyScheduler';
 import Navbar from './components/navbar/Navbar';
 import HomeReport from './components/report/HomeReport';
 import HomeUser from './components/users/HomeUser';
+import WeeklyScheduler from './components/calendar/directory/WeeklyScheduler';
+import ReadOnlyHomeUser from './components/calendar/board/ReadOnlyHomeUser'
 import LoginUsers from './components/login/LoginUsers';
 import ResetPassword from './components/login/ResetPassword';
 import HomeAdmin from './components/users/HomeAdmin';
@@ -41,8 +42,8 @@ const AnimatedRoutes = () => {
             <Route path="/" element={<HomeInit />} />
             <Route path="/login" element={<LoginUsers />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/about" element={<About />} />
             <Route path="/register" element={<Home />} />
+            <Route path="/board" element={<ReadOnlyHomeUser />} />
 
             {/* Rutas protegidas */}
             <Route path="/home" element={<ProtectedRoute><HomeUser /></ProtectedRoute>} />
@@ -59,8 +60,5 @@ const AnimatedRoutes = () => {
     </div>
   );
 };
-
-// Ruta "Acerca de"
-const About = () => <h2>Acerca de</h2>;
 
 export default App;

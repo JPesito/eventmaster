@@ -198,17 +198,24 @@ export default function HomeInit() {
         >
           {renderCard(
             handleNavigateToRegister, // Redirección a /register
-            '#FAC5C5',
+            '#9fc7fc',
             IconReserva,
             'Registrar Asistencia',
             'Registra tus asistencias a las salas para poder ayudarte.'
           )}
           {renderCard(
             handleOpenLoginModal, // Abre el modal al hacer clic
-            '#9fc7fc',
+            '#FAC5C5',
             IconAgregar,
             'Programación de Salas',
             'Crea y administra nuevas reservas de salas de forma rápida y sencilla.'
+          )}
+          {renderCard(
+            handleOpenLoginModal, // Abre el modal al hacer clic
+            '#9ffcc7', // Color verde similar al azul anterior
+            IconAgregar,
+            'Calendario Académico',
+            'Consulta el calendario académico con las reservas y eventos programados.'
           )}
         </Box>
       </Container>

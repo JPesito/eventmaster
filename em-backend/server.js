@@ -8,6 +8,12 @@ const { format, isValid, parseISO } = require('date-fns'); // Usaremos date-fns 
 require('dotenv').config();
 const app = express();
 
+if (!fecha || isNaN(new Date(fecha))) {
+    console.error("Fecha inválida:", fecha);
+} else {
+    const fechaFormateada = format(new Date(fecha), "yyyy-MM-dd HH:mm:ss");
+}
+
 const allowedOrigins = [
   process.env.REACT_APP_API_BASE_URL,
   'http://10.0.0.163:3002',
