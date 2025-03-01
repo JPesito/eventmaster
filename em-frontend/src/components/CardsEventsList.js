@@ -80,13 +80,6 @@ const CardsEventsList = ({ events = [] }) => {
               Aún puedes reservar una de nuestras salas. 
             </Typography>
           </Box>
-          <Button 
-            variant="contained" 
-            onClick={() => navigate('/teacher-scheduler')}
-            sx={{ marginTop: 2 }}
-          >
-            Reservar Sala
-          </Button>
         </Grid>
       </Grid>
     );

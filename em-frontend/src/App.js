@@ -7,6 +7,7 @@ import ProtectedAdminRoute from './components/routes/ProtectedAdminRoute';
 import Navbar from './components/navbar/Navbar';
 import HomeReport from './components/report/HomeReport';
 import HomeUser from './components/users/HomeUser';
+import HomeTeacher from './components/dashboard/HomeTeacher';
 import WeeklyScheduler from './components/calendar/directory/WeeklyScheduler';
 import ReadOnlyHomeUser from './components/calendar/board/ReadOnlyHomeUser'
 import LoginUsers from './components/login/LoginUsers';
@@ -44,6 +45,7 @@ const AnimatedRoutes = () => {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/register" element={<Home />} />
             <Route path="/board" element={<ReadOnlyHomeUser />} />
+            <Route path="/reserve-room" element={<HomeTeacher />} />
 
             {/* Rutas protegidas */}
             <Route path="/home" element={<ProtectedRoute><HomeUser /></ProtectedRoute>} />

@@ -8,6 +8,25 @@ body, html {
     width: 100%;
     font-family: 'Josefin Sans', sans-serif;
   }
+
+  /* Asegura que el campo de texto no cambie de tamaño */
+.textfield-container {
+  width: 300px; /* Ancho fijo */
+  position: relative;
+}
+
+/* Estilo para el ícono de "X" */
+.clear-icon {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  visibility: hidden;
+}
+
+.clear-icon.visible {
+  visibility: visible;
+}
   
   .animation-container {
     position: fixed;

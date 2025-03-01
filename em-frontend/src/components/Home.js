@@ -79,21 +79,22 @@ function Component() {
     }
   }, [navigate, selectedTeacher]);
 
+  const handleReserveRoomClick = useCallback(() => {
+    // Redirigir a la página de reserva de sala
+    navigate('/reserve-room');
+  }, [navigate]);
+
   const handleBackClick = useCallback(() => {
     setShowOtherComponent(false);
     setShowEvents(false);
   }, []);
 
   return (
-    
     <Box sx={{ position: 'relative', overflow: 'hidden', height: '100vh', width: '100vw', backgroundColor: 'var(--cold-color)' }}>
-      
       {/* Navbar */}
-
       <Navbar />
 
       {/* Animación de particulas */}
-      
       <ParticlesAnimation />
 
       <Logo 
@@ -198,7 +199,7 @@ function Component() {
                     {error && <p role="alert" style={{ color: 'red' }}>{error}</p>}
                   </>
                 )}
-                <div style={{ display: 'flex', justifyContent: 'center', width: '100%', paddingTop: '58px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', width: '100%', paddingTop: '58px', gap: '20px' }}>
                   <Button
                     variant="contained"
                     onClick={handleOtherComponentClick}
@@ -206,9 +207,20 @@ function Component() {
                       ...buttonStyle,
                       width: '200px',
                     }}
-                    aria-label="Ver otro componente"
+                    aria-label="Ver historial"
                   >
                     Ver Historial
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={handleReserveRoomClick}
+                    sx={{
+                      ...buttonStyle,
+                      width: '200px',
+                    }}
+                    aria-label="Reservar sala"
+                  >
+                    Reservar Sala
                   </Button>
                 </div>
               </Box>
