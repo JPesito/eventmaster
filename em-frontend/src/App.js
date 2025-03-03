@@ -15,6 +15,7 @@ import ResetPassword from './components/login/ResetPassword';
 import HomeAdmin from './components/users/HomeAdmin';
 import HomeInit from './components/dashboard/HomeInit';
 import EventsList from './components/EventsList';
+import SuccessMessage from './components/SuccessMessage';
 import Home from './components/Home';
 import './styles.css';
 import HomeTeacherScheduler from './components/users/HomeTeacherScheduler';
@@ -46,6 +47,7 @@ const AnimatedRoutes = () => {
             <Route path="/register" element={<Home />} />
             <Route path="/board" element={<ReadOnlyHomeUser />} />
             <Route path="/reserve-room" element={<HomeTeacher />} />
+            <Route path="/success" element={<SuccessMessage />} />
 
             {/* Rutas protegidas */}
             <Route path="/home" element={<ProtectedRoute><HomeUser /></ProtectedRoute>} />

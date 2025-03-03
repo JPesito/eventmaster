@@ -210,12 +210,7 @@ const CardsEventsList = ({ events = [] }) => {
                   fontSize: '1.5rem',
                   minWidth: '200px'
                 }}
-              >
-                
-                
-                {/* Cambiar icono de check por algo mas intuitivo para dar click y posterioremente mostrar check*/}
-                
-                
+              >          
                 <div style={{ width: '180px', height: '140px', overflow: 'hidden', paddingLeft: '5px' }}>
                   <DotLottieReact
                     src={clickAnimation}

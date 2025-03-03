@@ -182,7 +182,7 @@ app.get('/events/teacher/:teacherId', async (req, res) => {
     JOIN subjects ON events.subjectid = subjects.id
     JOIN rooms ON events.roomid = rooms.id
     JOIN programs ON subjects.programid = programs.id
-    WHERE events.teacherid = ?;
+    WHERE events.teacherid = ? AND events.IsUsed = 0;
   `;
 
   await db.query(query, [teacherId], (error, results) => {

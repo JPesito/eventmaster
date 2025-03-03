@@ -1,21 +1,22 @@
-// WeeklySchedulerTeacher.js
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import moment from "moment";
 import API_BASE_URL from "../../../config";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import { useMediaQuery } from "@mui/material";
-import EventInfoModal from "./EventInfoModal";
+import EventDialog from "./EventDialog";
 import EventCalendar from "./EventCalendar";
 import EventSnackbar from "../EventSnackbar";
+import SuccessModal from "./SuccessModal"; // Importar el nuevo componente
 import { theme } from "./EventStyles";
+import moment from "moment";
 
 const WeeklySchedulerTeacher = ({ selectedRoomId }) => {
   const [events, setEvents] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false); // Estado para el modal de éxito
   const [currentEvent, setCurrentEvent] = useState(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showErrorMessage, setShowErrorMessage] = useState(false);
@@ -72,6 +73,41 @@ const WeeklySchedulerTeacher = ({ selectedRoomId }) => {
     setIsModalOpen(true);
   };
 
+  const handleSaveEvent = async (eventToSave) => {
+    if (
+      !eventToSave ||
+      !eventToSave.start ||
+      !eventToSave.end ||
+      !selectedRoomId ||
+      !selectedTeacher ||
+      !selectedProgramId ||
+      !selectedSubject
+    ) {
+      setShowErrorMessage(true);
+      return;
+    }
+
+    const baseEvent = {
+      roomID: selectedRoomId,
+      teacherID: selectedTeacher.id,
+      programID: selectedProgramId,
+      subjectID: selectedSubject.id,
+      start: eventToSave.start.format("YYYY-MM-DD HH:mm:ss"),
+      end: eventToSave.end.format("YYYY-MM-DD HH:mm:ss"),
+    };
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/events`, baseEvent);
+      setEvents((prevEvents) => [...prevEvents, response.data]);
+      setIsModalOpen(false);
+      setShowSuccessMessage(true);
+      setIsSuccessModalOpen(true); // Mostrar el modal de éxito
+    } catch (error) {
+      console.error("Error al guardar el evento:", error);
+      setShowErrorMessage(true);
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <LocalizationProvider dateAdapter={AdapterMoment}>
@@ -89,12 +125,24 @@ const WeeklySchedulerTeacher = ({ selectedRoomId }) => {
             />
           )}
 
-          <EventInfoModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            event={currentEvent}
-            teacher={selectedTeacher}
-            subject={selectedSubject}
+          <EventDialog
+            isModalOpen={isModalOpen}
+            setIsModalOpen={setIsModalOpen}
+            currentEvent={currentEvent}
+            setCurrentEvent={setCurrentEvent}
+            selectedTeacher={selectedTeacher}
+            setSelectedTeacher={setSelectedTeacher}
+            selectedProgramId={selectedProgramId}
+            setSelectedProgramId={setSelectedProgramId}
+            selectedSubject={selectedSubject}
+            setSelectedSubject={setSelectedSubject}
+            handleSaveEvent={handleSaveEvent}
+            isEditMode={false} // Solo permitir agregar eventos, no editarlos
+          />
+
+          <SuccessModal
+            isOpen={isSuccessModalOpen}
+            onClose={() => setIsSuccessModalOpen(false)} // Cerrar el modal de éxito
           />
 
           <EventSnackbar
