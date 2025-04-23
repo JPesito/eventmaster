@@ -223,7 +223,15 @@ app.get('/programs', async (req, res) => {
 // Obtener periodos académicos
 app.get('/academicperiod', async (req, res) => {
   try {
-    const [results] = await db.query('SELECT id, academicSemester FROM academicperiod');
+    const [results] = await db.query(`SELECT id, academicSemester
+      FROM academicperiod
+      WHERE 
+        STR_TO_DATE(
+          CONCAT(LEFT(academicSemester, 4), 
+                IF(RIGHT(academicSemester, 1) = '1', '-01-01', '-07-01')
+          ), '%Y-%m-%d'
+        ) BETWEEN DATE_SUB(NOW(), INTERVAL 7 YEAR) AND NOW()
+      ORDER BY academicSemester DESC;`);
     res.json(results);
   } catch (error) {
     console.error('Error al obtener periodos académicos:', error);
@@ -592,7 +600,7 @@ app.get('/general-report', async (req, res) => {
           events.numStudents
         FROM events
         JOIN academicperiod ON events.academicperiodid = academicperiod.id
-        WHERE events.programid = ? AND academicperiod.id = ?
+        WHERE events.programid = ? AND academicperiod.id = ? AND events.isUsed = 1
       ),
       EnrollmentInfo AS (
         SELECT 
@@ -644,7 +652,7 @@ app.get('/group-attendance', async (req, res) => {
   const { academicPeriodId, programId } = req.query;
 
   try {
-    const [rooms] = await db.query('SELECT id, roomName FROM rooms ORDER BY id');
+    const [rooms] = await db.query('SELECT id, roomName FROM rooms WHERE id != 8 ORDER BY id');
     const roomNames = rooms.map((room) => room.roomName);
 
     const [attendance] = await db.query(
@@ -706,6 +714,32 @@ app.get('/subjects-by-period', async (req, res) => {
 });
 
 
+app.get('/program/:programId/tools', async (req, res) => {
+  const programId = req.params.programId; // Obtener el programId desde los parámetros de la URL
+
+  try {
+    // Realizamos la consulta SQL usando el pool directamente
+    const [rows] = await db.query(`
+      SELECT tools.nameTool
+      FROM tools
+      JOIN eventstools ON tools.id = eventstools.toolID
+      JOIN events ON eventstools.eventID = events.id
+      WHERE events.programID = ?
+      ORDER BY tools.nameTool ASC;
+    `, [programId]);
+
+    // Verificamos si se encontraron herramientas
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron herramientas para este programa' });
+    }
+
+    // Retornamos las herramientas encontradas
+    res.json(rows);
+  } catch (error) {
+    console.error('Error al obtener las herramientas:', error);
+    res.status(500).json({ message: 'Error al obtener las herramientas' });
+  }
+});
 
 
 

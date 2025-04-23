@@ -1,19 +1,30 @@
 import React from 'react';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  Paper 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  CircularProgress,
+  Box,
+  Typography
 } from '@mui/material';
 import { NoDataMessage } from './NoDataMessage';
 
-const AcademicTable = ({ data }) => {
-  
+const AcademicTable = ({ data, loading }) => {
+  console.log('Data in AcademicTable:', data);
+  console.log('Loading in AcademicTable:', loading);
 
-  console.log('Data:', data);
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" py={4}>
+        <CircularProgress />
+        <Typography variant="body1" sx={{ ml: 2 }}>Cargando datos de la tabla...</Typography>
+      </Box>
+    );
+  }
 
   if (!Array.isArray(data)) {
     console.error('Data received is not an array:', data);
@@ -39,7 +50,7 @@ const AcademicTable = ({ data }) => {
         </TableHead>
         <TableBody>
           {data.map((row, index) => (
-            <TableRow key={index}>
+            <TableRow key={row.id || index}> {/* Usando row.id como key si existe */}
               <TableCell align="center">{row.academicPeriod}</TableCell>
               <TableCell align="center">{row.groupClasses}</TableCell>
               <TableCell align="center">{row.hoursUsed}</TableCell>

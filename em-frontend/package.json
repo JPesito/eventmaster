@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/standalone": "^7.27.0",
     "@dotlottie/react-player": "^1.6.19",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",

@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Button, 
+import {
+  Box,
+  Container,
+  Typography,
   FormControl,
   InputLabel,
   Select,
@@ -18,34 +17,14 @@ import { debounce } from 'lodash';
 import AcademicTable from './AcademicTable';
 import GroupAttendanceChart from './GroupAttendanceChart';
 import SubjectsReport from './SubjectsReport';
+import ToolsReport from './ToolsReport';
 import {
   DynamicBackground,
-  StyledPaper,
-  IconWrapper,
-  ReportCard,
   ResultsList,
   ResultItem
 } from './styles-report';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000/api';
-
-const transformReportData = (rawData) => {
-  if (!rawData || typeof rawData !== 'object') {
-    return [];
-  }
-
-  console.log('rawData', rawData);
-
-  return Object.entries(rawData).map(([academicSemester, data]) => ({
-    programName: data.programName || 'N/A',
-    groupClasses: data.groupClasses,
-    academicPeriod: academicSemester,
-    hoursUsed: Math.round(data.hours * 100) / 100,
-    students: data.studentAttendance,
-    promStudents: Math.round((data.studentAttendance / data.groupClasses) * 100) / 100,
-    totalEnrolled: data.totalEnrolled
-  }));
-};
 
 const HomeReport = () => {
   const [reportData, setReportData] = useState([]);
@@ -58,7 +37,6 @@ const HomeReport = () => {
   const [programLoading, setProgramLoading] = useState(false);
   const [programError, setProgramError] = useState(null);
   const [selectedProgram, setSelectedProgram] = useState(null);
-  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     const fetchAcademicPeriods = async () => {
@@ -104,38 +82,57 @@ const HomeReport = () => {
     [fetchPrograms]
   );
 
-  const handleShowReport = async () => {
-    if (!selectedPeriod || !selectedProgram) {
+  const fetchReportData = useCallback(async (periodId, program) => {
+    if (!periodId || !program?.id) {
+      setReportData([]);
       return;
     }
 
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await axios.get(`${API_BASE_URL}/general-report`, {
         params: {
-          academicPeriodId: selectedPeriod,
-          programId: selectedProgram.id
+          academicPeriodId: periodId,
+          programId: program.id
         }
       });
-      
-      const transformedData = transformReportData(response.data);
-      
+
+      const rawData = response.data;
+      console.log('rawData', rawData);
+
+      const transformedData = Object.entries(rawData).map(([academicSemester, data]) => ({
+        programName: data.programName || 'N/A',
+        groupClasses: data.groupClasses,
+        academicPeriod: academicSemester,
+        hoursUsed: Math.round(data.hours * 100) / 100,
+        students: data.studentAttendance,
+        promStudents: Math.round((data.studentAttendance / data.groupClasses) * 100) / 100,
+        totalEnrolled: data.totalEnrolled
+      }));
+
       if (!Array.isArray(transformedData)) {
         throw new Error('Formato de datos inválido');
       }
-      
+
       setReportData(transformedData);
-      setShowReport(true);
     } catch (err) {
       console.error('Error al cargar los datos del reporte:', err);
       setError('Error al cargar los datos del reporte');
-      setShowReport(false);
+      setReportData([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (selectedPeriod && selectedProgram) {
+      fetchReportData(selectedPeriod, selectedProgram);
+    } else {
+      setReportData([]);
+    }
+  }, [selectedPeriod, selectedProgram, fetchReportData]);
 
   const handlePeriodChange = (event) => {
     setSelectedPeriod(event.target.value);
@@ -145,6 +142,7 @@ const HomeReport = () => {
     const value = e.target.value;
     setQuery(value);
     debouncedFetchPrograms(value);
+    setSelectedProgram(null); // Clear selected program when input changes
   }, [debouncedFetchPrograms]);
 
   const handleProgramSelect = useCallback((program) => {
@@ -165,7 +163,7 @@ const HomeReport = () => {
             <Typography variant="h5" align="center" style={{ color: 'white' }} paragraph>
               Monitoreo y análisis del uso de recursos tecnológicos
             </Typography>
-            
+
             {loading ? (
               <Box display="flex" justifyContent="center" my={4}>
                 <CircularProgress />
@@ -176,7 +174,7 @@ const HomeReport = () => {
               <Box display="flex" flexDirection="column" gap={2} mb={4}>
                 <Box display="flex" gap={2}>
 
-                {/*Año Academico*/}
+                  {/*Año Academico*/}
 
                   <FormControl variant="outlined" style={{ flex: 1 }}>
                     <InputLabel id="academic-period-label" style={{ color: 'white' }}>
@@ -196,7 +194,7 @@ const HomeReport = () => {
                       ))}
                     </Select>
                   </FormControl>
-                  
+
                   <Box position="relative" style={{ flex: 1 }}>
                     <TextField
                       fullWidth
@@ -235,35 +233,36 @@ const HomeReport = () => {
                     </Fade>
                   </Box>
                 </Box>
-
-                <Box display="flex" justifyContent="center" mt={4}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleShowReport}
-                    disabled={!selectedPeriod || !selectedProgram}
-                  >
-                    Ver Reporte
-                  </Button>
-                </Box>
               </Box>
             )}
 
-            {showReport && !loading && (
-              <Fade in={showReport}>
+            {selectedPeriod && selectedProgram && !loading && reportData.length > 0 && (
+              <Fade in={selectedPeriod && selectedProgram && reportData.length > 0}>
                 <div>
-                  <AcademicTable data={reportData} />
+                  <AcademicTable
+                    key={`${selectedPeriod}-${selectedProgram?.id}`}
+                    data={reportData}
+                  />
                   <GroupAttendanceChart
                     academicPeriodId={selectedPeriod}
                     programId={selectedProgram.id}
                   />
                   <Box mt={4}>
-                    {selectedPeriod && (
-                      <SubjectsReport academicPeriodId={selectedPeriod} programId={selectedProgram.id}/>
-                    )}
+                    <SubjectsReport academicPeriodId={selectedPeriod} programId={selectedProgram.id} />
                   </Box>
+                  <ToolsReport programId={selectedProgram.id} />
                 </div>
               </Fade>
+            )}
+
+            {selectedPeriod && selectedProgram && loading && (
+              <Box display="flex" justifyContent="center" mt={4}>
+                <CircularProgress />
+              </Box>
+            )}
+
+            {selectedPeriod && selectedProgram && error && (
+              <Typography color="error" align="center">{error}</Typography>
             )}
           </Box>
         </Container>

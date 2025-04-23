@@ -10,7 +10,7 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import axios from 'axios';
-import { CircularProgress, Typography, Box } from '@mui/material';
+import {CircularProgress, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,} from '@mui/material';
 
 // Registrar los componentes necesarios de Chart.js
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -92,6 +92,7 @@ const GroupAttendanceChart = ({ academicPeriodId, programId }) => {
       <Typography variant="h5" align="center" gutterBottom>
         Asistencias Grupales por Sala
       </Typography>
+  
       <Bar
         data={chartData}
         options={{
@@ -124,7 +125,36 @@ const GroupAttendanceChart = ({ academicPeriodId, programId }) => {
           },
         }}
       />
+  
+      {/* Tabla debajo de la gráfica */}
+      <Box mt={4}>
+        <Typography variant="h6" align="center" gutterBottom>
+          Detalle de Asistencias por Sala
+        </Typography>
+        <TableContainer component={Paper}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell><strong>Salas</strong></TableCell>
+                {chartData.labels.map((room, index) => (
+                  <TableCell key={index} align="center"><strong>{room}</strong></TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell><strong>Asistencias</strong></TableCell>
+                {chartData.datasets[0].data.map((value, index) => (
+                  <TableCell key={index} align="center">{value}</TableCell>
+                ))}
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
     </Box>
+
+    
   );
 };
 
